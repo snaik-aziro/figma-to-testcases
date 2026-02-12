@@ -1,0 +1,119 @@
+{
+  "screen": "Screen Login",
+  "screen_type": "authentication",
+  "component_count": 23,
+  "prd_requirements_used": 0,
+  "test_cases": [
+    {
+      "title": "Successful Login with Valid Credentials",
+      "description": "Verify that the system allows a user to log in successfully with valid login credentials.",
+      "priority": "high",
+      "preconditions": [
+        "User account exists with valid email and password"
+      ],
+      "test_steps": [
+        {
+          "step_number": 1,
+          "action": "Enter valid email and password in the login form",
+          "expected_result": "The login form should submit successfully and redirect to the dashboard",
+          "test_data": "Valid email and password"
+        },
+        {
+          "step_number": 2,
+          "action": "Verify that the user is logged in and can access the dashboard",
+          "expected_result": "The user should be logged in and able to access the dashboard",
+          "test_data": "None"
+        }
+      ],
+      "expected_results": [
+        "The user is logged in successfully"
+      ],
+      "tags": [
+        "login",
+        "authentication",
+        "happy_path"
+      ],
+      "requirement_ids": [
+        "REQ-1"
+      ],
+      "confidence_score": 0.95,
+      "test_type": "functional"
+    },
+    {
+      "title": "Failed Login with Invalid Credentials",
+      "description": "Verify that the system prevents a user from logging in with invalid login credentials.",
+      "priority": "high",
+      "preconditions": [
+        "User account exists with valid email and password"
+      ],
+      "test_steps": [
+        {
+          "step_number": 1,
+          "action": "Enter invalid email and password in the login form",
+          "expected_result": "The login form should display an error message indicating invalid credentials",
+          "test_data": "Invalid email and password"
+        },
+        {
+          "step_number": 2,
+          "action": "Verify that the user is not logged in and cannot access the dashboard",
+          "expected_result": "The user should not be logged in and unable to access the dashboard",
+          "test_data": "None"
+        }
+      ],
+      "expected_results": [
+        "The user is not logged in and an error message is displayed"
+      ],
+      "tags": [
+        "login",
+        "authentication",
+        "negative_scenario"
+      ],
+      "requirement_ids": [
+        "REQ-1"
+      ],
+      "confidence_score": 0.9,
+      "test_type": "functional"
+    },
+    {
+      "title": "Forgot Password Workflow",
+      "description": "Verify that the system allows a user to reset their password through the forgot password workflow.",
+      "priority": "medium",
+      "preconditions": [
+        "User account exists with valid email"
+      ],
+      "test_steps": [
+        {
+          "step_number": 1,
+          "action": "Click the forgot password link on the login page",
+          "expected_result": "The user should be redirected to the forgot password page",
+          "test_data": "None"
+        },
+        {
+          "step_number": 2,
+          "action": "Enter the user's email address and submit the form",
+          "expected_result": "The system should send a password reset link to the user's email address",
+          "test_data": "User's email address"
+        },
+        {
+          "step_number": 3,
+          "action": "Click the password reset link in the email and enter a new password",
+          "expected_result": "The user should be logged in with the new password",
+          "test_data": "New password"
+        }
+      ],
+      "expected_results": [
+        "The user's password is reset successfully"
+      ],
+      "tags": [
+        "password_reset",
+        "forgot_password",
+        "workflow"
+      ],
+      "requirement_ids": [
+        "REQ-2"
+      ],
+      "confidence_score": 0.85,
+      "test_type": "functional"
+    }
+  ]
+}

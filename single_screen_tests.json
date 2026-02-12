@@ -1,0 +1,81 @@
+{
+  "screen": "Screen Login",
+  "screen_type": "authentication",
+  "component_count": 23,
+  "test_cases": [
+    {
+      "title": "Valid Login with New Password",
+      "description": "Verify successful login with a new password that meets the password requirements.",
+      "priority": "high",
+      "preconditions": [
+        "User is on the login screen",
+        "New password meets the password requirements"
+      ],
+      "test_steps": [
+        {
+          "step_number": 1,
+          "action": "Enter a valid username and new password in the input fields",
+          "expected_result": "The password strength indicator shows a green checkmark",
+          "test_data": "Valid username and new password"
+        },
+        {
+          "step_number": 2,
+          "action": "Click the Login button",
+          "expected_result": "The user is redirected to the dashboard",
+          "test_data": "Valid username and new password"
+        }
+      ],
+      "expected_results": [
+        "The user is successfully logged in",
+        "The password strength indicator shows a green checkmark"
+      ],
+      "tags": [
+        "login",
+        "password",
+        "valid"
+      ],
+      "requirement_ids": [
+        "REQ-001"
+      ],
+      "confidence_score": 0.95,
+      "test_type": "functional"
+    },
+    {
+      "title": "Invalid Login with Weak Password",
+      "description": "Verify that an invalid login attempt with a weak password fails and displays an error message.",
+      "priority": "critical",
+      "preconditions": [
+        "User is on the login screen",
+        "New password does not meet the password requirements"
+      ],
+      "test_steps": [
+        {
+          "step_number": 1,
+          "action": "Enter an invalid username and a weak password in the input fields",
+          "expected_result": "The password strength indicator shows a red cross",
+          "test_data": "Invalid username and weak password"
+        },
+        {
+          "step_number": 2,
+          "action": "Click the Login button",
+          "expected_result": "An error message is displayed indicating that the password is weak",
+          "test_data": "Invalid username and weak password"
+        }
+      ],
+      "expected_results": [
+        "The login attempt fails",
+        "An error message is displayed indicating that the password is weak"
+      ],
+      "tags": [
+        "login",
+        "password",
+        "invalid"
+      ],
+      "requirement_ids": [
+        "REQ-001"
+      ],
+      "confidence_score": 0.9,
+      "test_type": "functional"
+    }
+  ]
+}

@@ -1,0 +1,2368 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-01-23",
+  "description": "Comprehensive baseline test scenario library for UI components and screen patterns. Maps Figma design elements to standardized test scenarios covering functional, visual, accessibility, and edge case testing.",
+  
+  "metadata": {
+    "total_components": 20,
+    "total_patterns": 10,
+    "total_scenarios": 250,
+    "wcag_version": "2.1",
+    "coverage_types": ["functional", "visual", "accessibility", "edge_case", "security", "performance"]
+  },
+
+  "ui_components": {
+    "button": {
+      "description": "Interactive button element for user actions",
+      "detection_patterns": {
+        "figma_types": ["COMPONENT", "INSTANCE", "FRAME"],
+        "name_keywords": ["button", "btn", "cta", "submit", "action", "click"],
+        "properties_indicators": ["has_interactions", "clickable"],
+        "visual_hints": ["rounded_corners", "has_background", "text_centered"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "BTN_FUNC_001",
+            "title": "Button click triggers expected action",
+            "description": "Verify button performs its intended action when clicked",
+            "priority": "critical",
+            "steps_template": [
+              "Navigate to screen containing {component_name}",
+              "Click the {component_name}",
+              "Verify {expected_action} occurs",
+              "Verify appropriate feedback is shown (if applicable)"
+            ],
+            "expected_results": ["Action completes successfully", "User receives confirmation"],
+            "preconditions": ["Button is visible and enabled"],
+            "test_data_hints": ["Valid user session", "Required permissions"],
+            "tags": ["interaction", "positive", "smoke"]
+          },
+          {
+            "id": "BTN_FUNC_002",
+            "title": "Disabled button prevents interaction",
+            "description": "Verify disabled button does not respond to clicks",
+            "priority": "high",
+            "steps_template": [
+              "Verify {component_name} is in disabled state",
+              "Attempt to click {component_name}",
+              "Verify no action is triggered",
+              "Verify disabled styling is visible (grayed out, reduced opacity)"
+            ],
+            "expected_results": ["No action occurs", "Disabled state is visually clear"],
+            "tags": ["state", "negative", "validation"]
+          },
+          {
+            "id": "BTN_FUNC_003",
+            "title": "Button shows loading state during async operations",
+            "description": "Verify button provides feedback during long operations",
+            "priority": "medium",
+            "steps_template": [
+              "Click {component_name} that triggers async operation",
+              "Observe button state immediately after click",
+              "Verify loading indicator appears (spinner, text change)",
+              "Verify button is disabled during loading",
+              "Wait for operation to complete",
+              "Verify button returns to normal state"
+            ],
+            "expected_results": ["Loading state is clear", "Button is temporarily disabled", "Returns to clickable state"],
+            "tags": ["async", "feedback", "ux"]
+          }
+        ],
+        "visual": [
+          {
+            "id": "BTN_VIS_001",
+            "title": "Button displays hover state",
+            "description": "Verify visual feedback on mouse hover",
+            "priority": "medium",
+            "steps_template": [
+              "Hover mouse over {component_name}",
+              "Verify visual change occurs (color shift, shadow, underline)",
+              "Move mouse away",
+              "Verify button returns to default state"
+            ],
+            "expected_results": ["Hover state is visually distinct", "Transition is smooth"],
+            "tags": ["hover", "visual_feedback", "ux"]
+          },
+          {
+            "id": "BTN_VIS_002",
+            "title": "Button shows active/pressed state",
+            "description": "Verify visual feedback when button is pressed",
+            "priority": "low",
+            "steps_template": [
+              "Press and hold mouse button on {component_name}",
+              "Verify active state styling appears",
+              "Release mouse button",
+              "Verify returns to hover or default state"
+            ],
+            "expected_results": ["Active state is visually distinct"],
+            "tags": ["active", "visual_feedback"]
+          },
+          {
+            "id": "BTN_VIS_003",
+            "title": "Button text is readable and properly sized",
+            "description": "Verify button text meets readability standards",
+            "priority": "medium",
+            "steps_template": [
+              "Inspect {component_name} text",
+              "Verify text is not truncated or cut off",
+              "Verify font size is at least 14px",
+              "Verify adequate padding around text"
+            ],
+            "expected_results": ["Text is fully visible", "Button is appropriately sized"],
+            "tags": ["typography", "readability"]
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "BTN_A11Y_001",
+            "title": "Button is keyboard accessible",
+            "description": "Verify button can be activated via keyboard",
+            "priority": "critical",
+            "wcag_criteria": ["2.1.1", "2.1.3"],
+            "steps_template": [
+              "Navigate to {component_name} using Tab key",
+              "Verify button receives focus",
+              "Verify focus indicator is clearly visible",
+              "Press Enter key",
+              "Verify button action is triggered",
+              "Press Space key (alternative test)",
+              "Verify button action is triggered"
+            ],
+            "expected_results": ["Tab navigation works", "Focus is visible", "Enter/Space activate button"],
+            "tags": ["keyboard", "focus", "wcag_a"]
+          },
+          {
+            "id": "BTN_A11Y_002",
+            "title": "Button has accessible name",
+            "description": "Verify button has descriptive label for screen readers",
+            "priority": "critical",
+            "wcag_criteria": ["4.1.2"],
+            "steps_template": [
+              "Inspect {component_name} with screen reader or dev tools",
+              "Verify button has accessible name (text, aria-label, or aria-labelledby)",
+              "Verify name clearly describes button purpose",
+              "Verify name is not generic like 'Click here' or 'Button'"
+            ],
+            "expected_results": ["Accessible name exists", "Name is descriptive"],
+            "tags": ["screen_reader", "aria", "wcag_a"]
+          },
+          {
+            "id": "BTN_A11Y_003",
+            "title": "Button has sufficient color contrast",
+            "description": "Verify button text meets minimum contrast ratio",
+            "priority": "high",
+            "wcag_criteria": ["1.4.3"],
+            "steps_template": [
+              "Measure contrast ratio between button text and background",
+              "Verify ratio is at least 4.5:1 for normal text",
+              "Verify ratio is at least 3:1 for large text (18pt+)",
+              "Test all button states (default, hover, active, focus, disabled)"
+            ],
+            "expected_results": ["Contrast meets WCAG AA standards"],
+            "tags": ["contrast", "color", "wcag_aa"]
+          },
+          {
+            "id": "BTN_A11Y_004",
+            "title": "Button focus indicator is visible",
+            "description": "Verify clear visual focus indicator",
+            "priority": "high",
+            "wcag_criteria": ["2.4.7"],
+            "steps_template": [
+              "Navigate to {component_name} via keyboard",
+              "Verify focus indicator appears (outline, border, glow)",
+              "Verify indicator has sufficient contrast (3:1 minimum)",
+              "Verify indicator is not hidden or barely visible"
+            ],
+            "expected_results": ["Focus indicator is clearly visible"],
+            "tags": ["focus", "keyboard", "wcag_aa"]
+          }
+        ],
+        "edge_cases": [
+          {
+            "id": "BTN_EDGE_001",
+            "title": "Rapid/double-click prevention",
+            "description": "Verify button prevents duplicate submissions",
+            "priority": "high",
+            "steps_template": [
+              "Rapidly click {component_name} multiple times in quick succession",
+              "Verify action only executes once",
+              "Verify no duplicate API calls or submissions",
+              "Verify button enters disabled/loading state after first click"
+            ],
+            "expected_results": ["Only one action executes", "No race conditions"],
+            "tags": ["concurrent", "race_condition", "debounce"]
+          },
+          {
+            "id": "BTN_EDGE_002",
+            "title": "Button with very long text",
+            "description": "Verify button handles long text gracefully",
+            "priority": "low",
+            "steps_template": [
+              "Test {component_name} with unusually long text label",
+              "Verify text wraps or truncates appropriately",
+              "Verify button doesn't break layout",
+              "Verify button remains clickable"
+            ],
+            "expected_results": ["Long text handled gracefully", "Layout not broken"],
+            "tags": ["text_overflow", "responsive"]
+          },
+          {
+            "id": "BTN_EDGE_003",
+            "title": "Button behavior on slow network",
+            "description": "Verify button provides feedback on delayed responses",
+            "priority": "medium",
+            "steps_template": [
+              "Throttle network to slow 3G",
+              "Click {component_name}",
+              "Verify loading indicator appears within 200ms",
+              "Verify button remains disabled until response",
+              "Verify timeout handling if request takes too long"
+            ],
+            "expected_results": ["User gets feedback on delay", "No hanging state"],
+            "tags": ["network", "performance", "timeout"]
+          }
+        ],
+        "security": [
+          {
+            "id": "BTN_SEC_001",
+            "title": "Button validates user permissions",
+            "description": "Verify button action checks authorization",
+            "priority": "high",
+            "steps_template": [
+              "Attempt to click {component_name} without required permissions",
+              "Verify access denied message appears",
+              "Verify action does not execute",
+              "Verify user is prompted to authenticate if needed"
+            ],
+            "expected_results": ["Unauthorized access prevented"],
+            "tags": ["authorization", "security"],
+            "applicable_when": "requires_permissions"
+          }
+        ]
+      },
+      "variations": {
+        "primary_button": {
+          "description": "Main call-to-action button",
+          "additional_tests": ["Verify prominent styling", "Verify positioned prominently"],
+          "priority_modifier": "+1"
+        },
+        "secondary_button": {
+          "description": "Secondary action button",
+          "additional_tests": ["Verify less prominent than primary", "Verify still clearly clickable"]
+        },
+        "icon_button": {
+          "description": "Button with icon only",
+          "additional_tests": [
+            "Verify icon is recognizable",
+            "Verify has tooltip or aria-label",
+            "Verify touch target is at least 44x44px"
+          ]
+        },
+        "text_button": {
+          "description": "Button styled as text link",
+          "additional_tests": ["Verify underline on hover", "Verify clearly distinguishable from static text"]
+        },
+        "submit_button": {
+          "description": "Form submission button",
+          "additional_tests": [
+            "Verify form validation before submission",
+            "Verify success/error feedback after submission",
+            "Verify Enter key in form triggers submit"
+          ]
+        }
+      },
+      "common_issues": [
+        "Disabled state not visually clear",
+        "No loading feedback on async operations",
+        "Missing keyboard accessibility",
+        "Poor touch target size on mobile (<44px)",
+        "No double-click prevention"
+      ]
+    },
+
+    "input": {
+      "description": "Text input field for user data entry",
+      "detection_patterns": {
+        "figma_types": ["FRAME", "COMPONENT", "INSTANCE"],
+        "name_keywords": ["input", "field", "textbox", "text field", "text input", "entry"],
+        "child_components": ["text_placeholder", "label"],
+        "properties_indicators": ["editable", "has_text"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "INPUT_FUNC_001",
+            "title": "Valid text input acceptance",
+            "description": "Verify field accepts valid input",
+            "priority": "critical",
+            "steps_template": [
+              "Click {component_name} to focus",
+              "Enter valid text: '{test_data}'",
+              "Verify text appears in field as typed",
+              "Verify no error message appears",
+              "Tab or click away to blur field",
+              "Verify text is retained"
+            ],
+            "expected_results": ["Input accepted", "Text displayed correctly"],
+            "test_data_hints": ["Sample valid input based on field type"],
+            "tags": ["input", "positive", "smoke"]
+          },
+          {
+            "id": "INPUT_FUNC_002",
+            "title": "Required field validation",
+            "description": "Verify empty required field shows error",
+            "priority": "critical",
+            "steps_template": [
+              "Leave {component_name} empty",
+              "Attempt to submit form or blur field",
+              "Verify validation error message appears",
+              "Verify field is highlighted or marked with error styling",
+              "Verify error message is descriptive (e.g., 'Email is required')"
+            ],
+            "expected_results": ["Error shown for empty required field", "Submission blocked"],
+            "tags": ["validation", "required", "negative"],
+            "applicable_when": "required_field"
+          },
+          {
+            "id": "INPUT_FUNC_003",
+            "title": "Maximum length enforcement",
+            "description": "Verify input respects character limit",
+            "priority": "high",
+            "steps_template": [
+              "Identify max length for {component_name}",
+              "Attempt to enter text exceeding max length",
+              "Verify text is truncated at max length",
+              "Verify character counter updates (if present)",
+              "Verify user cannot type beyond limit"
+            ],
+            "expected_results": ["Max length enforced", "Counter shows remaining chars"],
+            "tags": ["validation", "limit", "boundary"],
+            "applicable_when": "has_max_length"
+          },
+          {
+            "id": "INPUT_FUNC_004",
+            "title": "Copy and paste functionality",
+            "description": "Verify copy/paste works correctly",
+            "priority": "medium",
+            "steps_template": [
+              "Enter text in {component_name}",
+              "Select all text (Ctrl+A)",
+              "Copy text (Ctrl+C)",
+              "Clear field",
+              "Paste text (Ctrl+V)",
+              "Verify text is pasted correctly",
+              "Verify validation runs on pasted text"
+            ],
+            "expected_results": ["Copy/paste works", "Validation applied to pasted content"],
+            "tags": ["clipboard", "keyboard_shortcuts"]
+          },
+          {
+            "id": "INPUT_FUNC_005",
+            "title": "Clear/reset functionality",
+            "description": "Verify field can be cleared if clear button exists",
+            "priority": "medium",
+            "steps_template": [
+              "Enter text in {component_name}",
+              "Click clear/X button (if present)",
+              "Verify field is emptied",
+              "Verify focus remains in field or moves appropriately"
+            ],
+            "expected_results": ["Field clears successfully"],
+            "tags": ["clear", "reset"],
+            "applicable_when": "has_clear_button"
+          }
+        ],
+        "visual": [
+          {
+            "id": "INPUT_VIS_001",
+            "title": "Placeholder text displays correctly",
+            "description": "Verify placeholder provides helpful hint",
+            "priority": "medium",
+            "steps_template": [
+              "Observe {component_name} when empty",
+              "Verify placeholder text is visible",
+              "Verify placeholder is lighter/grayed compared to actual input",
+              "Click into field",
+              "Verify placeholder disappears when typing starts"
+            ],
+            "expected_results": ["Placeholder visible when empty", "Disappears on input"],
+            "tags": ["placeholder", "ux"]
+          },
+          {
+            "id": "INPUT_VIS_002",
+            "title": "Focus state is visually distinct",
+            "description": "Verify field shows clear focus indicator",
+            "priority": "high",
+            "steps_template": [
+              "Click or tab into {component_name}",
+              "Verify focus indicator appears (border change, outline, glow)",
+              "Verify indicator has sufficient contrast",
+              "Click outside field",
+              "Verify focus indicator disappears"
+            ],
+            "expected_results": ["Focus state is clear and distinct"],
+            "tags": ["focus", "visual_feedback"]
+          },
+          {
+            "id": "INPUT_VIS_003",
+            "title": "Error state styling is clear",
+            "description": "Verify error state is visually obvious",
+            "priority": "high",
+            "steps_template": [
+              "Trigger validation error on {component_name}",
+              "Verify field shows error styling (red border, icon, etc.)",
+              "Verify error message is displayed near field",
+              "Verify error message is clearly associated with field",
+              "Correct the error",
+              "Verify error styling is removed"
+            ],
+            "expected_results": ["Error state is obvious", "Error clears when fixed"],
+            "tags": ["error", "validation", "visual_feedback"]
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "INPUT_A11Y_001",
+            "title": "Input has associated label",
+            "description": "Verify field has descriptive label",
+            "priority": "critical",
+            "wcag_criteria": ["3.3.2", "4.1.2"],
+            "steps_template": [
+              "Inspect {component_name} with screen reader",
+              "Verify label is announced when field receives focus",
+              "Verify label-input association (for attribute or aria-labelledby)",
+              "Verify clicking label focuses the input",
+              "Verify label text is descriptive (not just 'Input')"
+            ],
+            "expected_results": ["Label exists and is associated", "Label is descriptive"],
+            "tags": ["label", "screen_reader", "wcag_a"]
+          },
+          {
+            "id": "INPUT_A11Y_002",
+            "title": "Error messages are announced to screen readers",
+            "description": "Verify validation errors are accessible",
+            "priority": "critical",
+            "wcag_criteria": ["3.3.1", "4.1.3"],
+            "steps_template": [
+              "Using screen reader, navigate to {component_name}",
+              "Trigger validation error",
+              "Verify error message is announced by screen reader",
+              "Verify error is associated via aria-describedby or aria-live",
+              "Verify field is marked as invalid (aria-invalid='true')"
+            ],
+            "expected_results": ["Errors are announced", "Field marked as invalid"],
+            "tags": ["error", "screen_reader", "aria", "wcag_a"]
+          },
+          {
+            "id": "INPUT_A11Y_003",
+            "title": "Required indicator is accessible",
+            "description": "Verify required status is conveyed to assistive tech",
+            "priority": "high",
+            "wcag_criteria": ["3.3.2"],
+            "steps_template": [
+              "Inspect required {component_name}",
+              "Verify visual required indicator (* or 'Required' text)",
+              "Verify aria-required='true' or required attribute exists",
+              "Test with screen reader",
+              "Verify 'required' status is announced"
+            ],
+            "expected_results": ["Required status is clear visually and programmatically"],
+            "tags": ["required", "aria", "wcag_a"],
+            "applicable_when": "required_field"
+          }
+        ],
+        "edge_cases": [
+          {
+            "id": "INPUT_EDGE_001",
+            "title": "Special characters handling",
+            "description": "Verify field handles special characters safely",
+            "priority": "high",
+            "steps_template": [
+              "Enter special characters: <script>alert('xss')</script> in {component_name}",
+              "Verify characters are properly sanitized or escaped",
+              "Verify no script execution occurs",
+              "Verify characters display as plain text",
+              "Submit form and verify backend also sanitizes"
+            ],
+            "expected_results": ["No XSS vulnerability", "Special chars handled safely"],
+            "tags": ["security", "xss", "special_chars"]
+          },
+          {
+            "id": "INPUT_EDGE_002",
+            "title": "Unicode and emoji support",
+            "description": "Verify international characters work correctly",
+            "priority": "medium",
+            "steps_template": [
+              "Enter Unicode characters: '你好', 'العربية', '日本語' in {component_name}",
+              "Enter emojis: '😀🎉👍' in field",
+              "Verify characters display correctly",
+              "Verify character count is accurate (counts graphemes not bytes)",
+              "Verify submission and retrieval preserves characters"
+            ],
+            "expected_results": ["Unicode/emoji supported", "No character corruption"],
+            "tags": ["unicode", "emoji", "i18n"]
+          },
+          {
+            "id": "INPUT_EDGE_003",
+            "title": "Paste formatted text",
+            "description": "Verify pasted content is cleaned",
+            "priority": "medium",
+            "steps_template": [
+              "Copy formatted text from Word/Google Docs (with bold, colors, etc.)",
+              "Paste into {component_name}",
+              "Verify only plain text is retained",
+              "Verify no invisible characters or formatting codes",
+              "Verify field layout is not broken"
+            ],
+            "expected_results": ["Formatted text converts to plain text", "No layout break"],
+            "tags": ["paste", "formatting", "sanitization"]
+          },
+          {
+            "id": "INPUT_EDGE_004",
+            "title": "Leading and trailing whitespace",
+            "description": "Verify whitespace is handled appropriately",
+            "priority": "low",
+            "steps_template": [
+              "Enter text with leading spaces: '   value' in {component_name}",
+              "Enter text with trailing spaces: 'value   '",
+              "Submit form or blur field",
+              "Verify whitespace is trimmed (or retained if intentional)",
+              "Verify validation considers trimmed value"
+            ],
+            "expected_results": ["Whitespace handled per requirements"],
+            "tags": ["whitespace", "trimming", "validation"]
+          },
+          {
+            "id": "INPUT_EDGE_005",
+            "title": "Input field on slow/offline network",
+            "description": "Verify field works without network dependency",
+            "priority": "low",
+            "steps_template": [
+              "Disconnect network or throttle to offline",
+              "Type in {component_name}",
+              "Verify typing works without delay",
+              "Verify local validation still works",
+              "Verify appropriate message if server validation is needed"
+            ],
+            "expected_results": ["Local interaction works offline"],
+            "tags": ["offline", "performance"]
+          }
+        ]
+      },
+      "variations": {
+        "email_input": {
+          "description": "Email address input field",
+          "additional_tests": [
+            {
+              "id": "EMAIL_001",
+              "title": "Invalid email format rejected",
+              "steps": [
+                "Enter invalid email: 'notanemail' or 'user@' or '@domain.com'",
+                "Blur field or submit",
+                "Verify validation error: 'Please enter a valid email address'"
+              ]
+            },
+            {
+              "id": "EMAIL_002",
+              "title": "Valid email formats accepted",
+              "steps": [
+                "Enter valid emails: 'user@domain.com', 'user+tag@domain.co.uk'",
+                "Verify accepted without error"
+              ]
+            }
+          ],
+          "validation_pattern": "RFC 5322 email standard"
+        },
+        "password_input": {
+          "description": "Password input field",
+          "additional_tests": [
+            {
+              "id": "PWD_001",
+              "title": "Password is masked by default",
+              "steps": [
+                "Enter password in field",
+                "Verify characters display as dots/asterisks"
+              ]
+            },
+            {
+              "id": "PWD_002",
+              "title": "Show/hide password toggle",
+              "steps": [
+                "Enter password",
+                "Click show password icon",
+                "Verify password becomes visible",
+                "Click hide password icon",
+                "Verify password is masked again"
+              ]
+            },
+            {
+              "id": "PWD_003",
+              "title": "Password strength indicator",
+              "steps": [
+                "Enter weak password: '123'",
+                "Verify strength shows 'Weak'",
+                "Enter strong password: 'P@ssw0rd!123'",
+                "Verify strength shows 'Strong'"
+              ]
+            }
+          ]
+        },
+        "number_input": {
+          "description": "Numeric input field",
+          "additional_tests": [
+            {
+              "id": "NUM_001",
+              "title": "Non-numeric characters rejected",
+              "steps": [
+                "Attempt to type letters in number field",
+                "Verify letters are not entered",
+                "Verify only digits (and decimal/minus if allowed) are accepted"
+              ]
+            },
+            {
+              "id": "NUM_002",
+              "title": "Min/max value validation",
+              "steps": [
+                "Enter value below minimum",
+                "Verify error: 'Value must be at least {min}'",
+                "Enter value above maximum",
+                "Verify error: 'Value must be no more than {max}'"
+              ]
+            }
+          ]
+        },
+        "search_input": {
+          "description": "Search field",
+          "additional_tests": [
+            {
+              "id": "SEARCH_001",
+              "title": "Search on Enter key",
+              "steps": [
+                "Enter search term",
+                "Press Enter",
+                "Verify search executes"
+              ]
+            },
+            {
+              "id": "SEARCH_002",
+              "title": "Clear search button",
+              "steps": [
+                "Enter search term",
+                "Click X/clear button",
+                "Verify field clears and results reset"
+              ]
+            }
+          ]
+        },
+        "textarea": {
+          "description": "Multi-line text input",
+          "additional_tests": [
+            {
+              "id": "TEXTAREA_001",
+              "title": "Multi-line text support",
+              "steps": [
+                "Enter text with line breaks (press Enter)",
+                "Verify line breaks are preserved",
+                "Submit and verify formatting retained"
+              ]
+            },
+            {
+              "id": "TEXTAREA_002",
+              "title": "Resize functionality",
+              "steps": [
+                "Drag resize handle (if present)",
+                "Verify textarea resizes",
+                "Verify content reflows appropriately"
+              ]
+            }
+          ]
+        }
+      }
+    },
+
+    "checkbox": {
+      "description": "Binary selection control",
+      "detection_patterns": {
+        "figma_types": ["COMPONENT", "INSTANCE", "FRAME"],
+        "name_keywords": ["checkbox", "check", "toggle"],
+        "visual_hints": ["small_square_box", "checkmark_icon"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "CHK_FUNC_001",
+            "title": "Check and uncheck functionality",
+            "priority": "critical",
+            "steps_template": [
+              "Click unchecked {component_name}",
+              "Verify checkbox becomes checked (checkmark appears)",
+              "Click checked checkbox",
+              "Verify checkbox becomes unchecked (checkmark disappears)",
+              "Verify state persists if form is not submitted"
+            ],
+            "tags": ["interaction", "toggle", "smoke"]
+          },
+          {
+            "id": "CHK_FUNC_002",
+            "title": "Checkbox state reflects in form data",
+            "priority": "high",
+            "steps_template": [
+              "Check {component_name}",
+              "Submit form",
+              "Verify checkbox value is included in submission (true/checked)",
+              "Uncheck checkbox",
+              "Submit form",
+              "Verify value is false/unchecked or excluded"
+            ],
+            "tags": ["form_data", "submission"]
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "CHK_A11Y_001",
+            "title": "Keyboard toggle with Space key",
+            "priority": "critical",
+            "wcag_criteria": ["2.1.1"],
+            "steps_template": [
+              "Tab to {component_name}",
+              "Verify checkbox receives focus",
+              "Press Space key",
+              "Verify checkbox toggles state",
+              "Press Space again",
+              "Verify state toggles back"
+            ],
+            "tags": ["keyboard", "wcag_a"]
+          },
+          {
+            "id": "CHK_A11Y_002",
+            "title": "Checkbox has accessible label",
+            "priority": "critical",
+            "wcag_criteria": ["4.1.2"],
+            "steps_template": [
+              "Test {component_name} with screen reader",
+              "Verify label is announced",
+              "Verify checkbox role is announced",
+              "Verify checked/unchecked state is announced"
+            ],
+            "tags": ["screen_reader", "aria", "wcag_a"]
+          }
+        ]
+      }
+    },
+
+    "radio": {
+      "description": "Single selection from multiple options",
+      "detection_patterns": {
+        "figma_types": ["COMPONENT", "INSTANCE"],
+        "name_keywords": ["radio", "option", "choice"],
+        "visual_hints": ["circular_button", "group_of_circles"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "RADIO_FUNC_001",
+            "title": "Single selection enforcement",
+            "priority": "critical",
+            "steps_template": [
+              "Click first radio button in {component_name} group",
+              "Verify it becomes selected",
+              "Click second radio button in same group",
+              "Verify second becomes selected",
+              "Verify first is automatically deselected",
+              "Verify only one radio can be selected at a time"
+            ],
+            "tags": ["selection", "mutual_exclusion", "smoke"]
+          },
+          {
+            "id": "RADIO_FUNC_002",
+            "title": "Required radio group validation",
+            "priority": "high",
+            "steps_template": [
+              "Attempt to submit form without selecting any radio in {component_name}",
+              "Verify validation error appears",
+              "Select a radio option",
+              "Verify error clears",
+              "Verify submission proceeds"
+            ],
+            "tags": ["validation", "required"],
+            "applicable_when": "required_field"
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "RADIO_A11Y_001",
+            "title": "Arrow key navigation between radios",
+            "priority": "high",
+            "wcag_criteria": ["2.1.1"],
+            "steps_template": [
+              "Tab to {component_name} radio group",
+              "Verify first (or selected) radio receives focus",
+              "Press Down/Right arrow key",
+              "Verify focus moves to next radio and it becomes selected",
+              "Press Up/Left arrow key",
+              "Verify focus moves to previous radio"
+            ],
+            "tags": ["keyboard", "arrow_navigation", "wcag_a"]
+          }
+        ]
+      }
+    },
+
+    "dropdown": {
+      "description": "Selection control with collapsible options list",
+      "detection_patterns": {
+        "figma_types": ["COMPONENT", "FRAME"],
+        "name_keywords": ["dropdown", "select", "picker", "combobox"],
+        "visual_hints": ["down_arrow_icon", "chevron"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "DROP_FUNC_001",
+            "title": "Dropdown opens and closes",
+            "priority": "critical",
+            "steps_template": [
+              "Click {component_name}",
+              "Verify options list expands/appears",
+              "Click outside dropdown or press Escape",
+              "Verify options list closes"
+            ],
+            "tags": ["interaction", "open_close", "smoke"]
+          },
+          {
+            "id": "DROP_FUNC_002",
+            "title": "Option selection updates displayed value",
+            "priority": "critical",
+            "steps_template": [
+              "Open {component_name}",
+              "Click an option from the list",
+              "Verify dropdown closes",
+              "Verify selected option is displayed in dropdown",
+              "Verify selection is retained"
+            ],
+            "tags": ["selection", "display"]
+          },
+          {
+            "id": "DROP_FUNC_003",
+            "title": "Search/filter functionality",
+            "priority": "medium",
+            "steps_template": [
+              "Open {component_name}",
+              "Type search term in search box (if present)",
+              "Verify options list filters to matches",
+              "Verify non-matching options are hidden",
+              "Clear search",
+              "Verify all options reappear"
+            ],
+            "tags": ["search", "filter"],
+            "applicable_when": "has_search"
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "DROP_A11Y_001",
+            "title": "Keyboard navigation through options",
+            "priority": "critical",
+            "wcag_criteria": ["2.1.1"],
+            "steps_template": [
+              "Tab to {component_name}",
+              "Press Enter or Space to open",
+              "Use Down arrow to navigate options",
+              "Verify visual focus indicator on options",
+              "Press Enter to select focused option",
+              "Verify dropdown closes and selection is made"
+            ],
+            "tags": ["keyboard", "wcag_a"]
+          }
+        ]
+      }
+    },
+
+    "modal": {
+      "description": "Overlay dialog that requires user interaction",
+      "detection_patterns": {
+        "figma_types": ["FRAME", "COMPONENT"],
+        "name_keywords": ["modal", "dialog", "popup", "overlay"],
+        "visual_hints": ["centered_frame", "background_overlay"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "MODAL_FUNC_001",
+            "title": "Modal opens on trigger",
+            "priority": "critical",
+            "steps_template": [
+              "Click trigger button/link",
+              "Verify {component_name} appears",
+              "Verify background content is dimmed/overlaid",
+              "Verify background content is not interactive"
+            ],
+            "tags": ["open", "trigger", "smoke"]
+          },
+          {
+            "id": "MODAL_FUNC_002",
+            "title": "Modal closes with close button",
+            "priority": "critical",
+            "steps_template": [
+              "Open {component_name}",
+              "Click close button (X icon)",
+              "Verify modal disappears",
+              "Verify background content is interactive again"
+            ],
+            "tags": ["close", "interaction"]
+          },
+          {
+            "id": "MODAL_FUNC_003",
+            "title": "Modal closes with Escape key",
+            "priority": "high",
+            "steps_template": [
+              "Open {component_name}",
+              "Press Escape key",
+              "Verify modal closes",
+              "Verify focus returns to trigger element"
+            ],
+            "tags": ["keyboard", "escape"]
+          },
+          {
+            "id": "MODAL_FUNC_004",
+            "title": "Click outside to close (if applicable)",
+            "priority": "medium",
+            "steps_template": [
+              "Open {component_name}",
+              "Click on dimmed background outside modal",
+              "Verify modal closes (or remains open if behavior is to stay)",
+              "Document expected behavior"
+            ],
+            "tags": ["backdrop_click"]
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "MODAL_A11Y_001",
+            "title": "Focus trap within modal",
+            "priority": "critical",
+            "wcag_criteria": ["2.4.3"],
+            "steps_template": [
+              "Open {component_name}",
+              "Press Tab repeatedly",
+              "Verify focus stays within modal (cycles through interactive elements)",
+              "Verify focus doesn't reach background content",
+              "Verify Shift+Tab works to move backward"
+            ],
+            "tags": ["focus_trap", "keyboard", "wcag_aa"]
+          },
+          {
+            "id": "MODAL_A11Y_002",
+            "title": "Focus moves to modal on open",
+            "priority": "critical",
+            "wcag_criteria": ["2.4.3"],
+            "steps_template": [
+              "Click trigger to open {component_name}",
+              "Verify focus automatically moves into modal",
+              "Verify focus is on first interactive element or close button"
+            ],
+            "tags": ["focus_management", "wcag_aa"]
+          },
+          {
+            "id": "MODAL_A11Y_003",
+            "title": "Modal has accessible label and role",
+            "priority": "high",
+            "wcag_criteria": ["4.1.2"],
+            "steps_template": [
+              "Inspect {component_name} with screen reader",
+              "Verify role='dialog' or role='alertdialog'",
+              "Verify aria-labelledby or aria-label provides title",
+              "Verify aria-describedby provides description if needed",
+              "Verify screen reader announces dialog opening"
+            ],
+            "tags": ["aria", "screen_reader", "wcag_a"]
+          }
+        ]
+      }
+    },
+
+    "navigation": {
+      "description": "Main navigation menu or links",
+      "detection_patterns": {
+        "figma_types": ["FRAME", "GROUP"],
+        "name_keywords": ["nav", "navigation", "menu", "header", "navbar"],
+        "contains_multiple": ["links", "buttons"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "NAV_FUNC_001",
+            "title": "Navigation links route correctly",
+            "priority": "critical",
+            "steps_template": [
+              "Click each link in {component_name}",
+              "Verify correct page/section loads",
+              "Verify URL updates correctly",
+              "Verify active/current page is visually indicated"
+            ],
+            "tags": ["routing", "links", "smoke"]
+          },
+          {
+            "id": "NAV_FUNC_002",
+            "title": "Mobile hamburger menu toggle",
+            "priority": "high",
+            "steps_template": [
+              "View on mobile viewport (< 768px)",
+              "Verify navigation is collapsed to hamburger icon",
+              "Click hamburger icon",
+              "Verify navigation menu expands",
+              "Click icon again",
+              "Verify menu collapses"
+            ],
+            "tags": ["mobile", "responsive", "hamburger"],
+            "applicable_when": "responsive_design"
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "NAV_A11Y_001",
+            "title": "Skip navigation link",
+            "priority": "high",
+            "wcag_criteria": ["2.4.1"],
+            "steps_template": [
+              "Load page",
+              "Press Tab (should be first focusable element)",
+              "Verify 'Skip to main content' link appears",
+              "Press Enter on skip link",
+              "Verify focus moves to main content area"
+            ],
+            "tags": ["skip_link", "keyboard", "wcag_a"]
+          },
+          {
+            "id": "NAV_A11Y_002",
+            "title": "Navigation has semantic nav element",
+            "priority": "medium",
+            "wcag_criteria": ["4.1.2"],
+            "steps_template": [
+              "Inspect {component_name} HTML",
+              "Verify wrapped in <nav> element or role='navigation'",
+              "Verify aria-label if multiple nav elements exist"
+            ],
+            "tags": ["semantic_html", "aria", "wcag_a"]
+          }
+        ]
+      }
+    },
+
+    "table": {
+      "description": "Data table with rows and columns",
+      "detection_patterns": {
+        "figma_types": ["FRAME", "GROUP"],
+        "name_keywords": ["table", "grid", "data table", "list"],
+        "visual_hints": ["repeated_rows", "column_headers"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "TABLE_FUNC_001",
+            "title": "Column sorting",
+            "priority": "high",
+            "steps_template": [
+              "Click column header in {component_name}",
+              "Verify data sorts ascending",
+              "Click same header again",
+              "Verify data sorts descending",
+              "Verify sort indicator (arrow) shows direction"
+            ],
+            "tags": ["sorting", "interaction"],
+            "applicable_when": "sortable"
+          },
+          {
+            "id": "TABLE_FUNC_002",
+            "title": "Row selection",
+            "priority": "medium",
+            "steps_template": [
+              "Click row in {component_name}",
+              "Verify row is highlighted/selected",
+              "Verify selection state is maintained",
+              "Click another row",
+              "Verify new row selected (check if multi-select or single-select)"
+            ],
+            "tags": ["selection", "interaction"],
+            "applicable_when": "selectable_rows"
+          },
+          {
+            "id": "TABLE_FUNC_003",
+            "title": "Pagination",
+            "priority": "high",
+            "steps_template": [
+              "Verify page indicator shows current page (e.g., 'Page 1 of 10')",
+              "Click 'Next' button",
+              "Verify next page of data loads",
+              "Verify page indicator updates",
+              "Click 'Previous' button",
+              "Verify returns to previous page"
+            ],
+            "tags": ["pagination", "navigation"],
+            "applicable_when": "paginated"
+          },
+          {
+            "id": "TABLE_FUNC_004",
+            "title": "Search/filter functionality",
+            "priority": "medium",
+            "steps_template": [
+              "Enter search term in table search box",
+              "Verify table filters to show only matching rows",
+              "Verify 'no results' message if no matches",
+              "Clear search",
+              "Verify all data returns"
+            ],
+            "tags": ["search", "filter"],
+            "applicable_when": "has_search"
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "TABLE_A11Y_001",
+            "title": "Table has proper semantic structure",
+            "priority": "high",
+            "wcag_criteria": ["1.3.1"],
+            "steps_template": [
+              "Inspect {component_name} HTML",
+              "Verify uses <table> element or role='table'",
+              "Verify headers use <th> or role='columnheader'",
+              "Verify data cells use <td> or role='cell'",
+              "Test with screen reader - verify announces rows/columns"
+            ],
+            "tags": ["semantic_html", "screen_reader", "wcag_a"]
+          }
+        ]
+      }
+    },
+
+    "card": {
+      "description": "Container for related content, often interactive",
+      "detection_patterns": {
+        "figma_types": ["FRAME", "COMPONENT"],
+        "name_keywords": ["card", "tile", "item"],
+        "visual_hints": ["bordered_container", "has_shadow"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "CARD_FUNC_001",
+            "title": "Card click interaction (if clickable)",
+            "priority": "high",
+            "steps_template": [
+              "Click {component_name}",
+              "Verify expected action occurs (navigation, expansion, etc.)",
+              "Verify appropriate feedback (hover state, etc.)"
+            ],
+            "tags": ["interaction", "clickable"],
+            "applicable_when": "clickable"
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "CARD_A11Y_001",
+            "title": "Clickable card is keyboard accessible",
+            "priority": "high",
+            "wcag_criteria": ["2.1.1"],
+            "steps_template": [
+              "Tab to {component_name}",
+              "Verify card receives focus",
+              "Press Enter",
+              "Verify card action is triggered"
+            ],
+            "tags": ["keyboard", "wcag_a"],
+            "applicable_when": "clickable"
+          }
+        ]
+      }
+    },
+
+    "image": {
+      "description": "Image element",
+      "detection_patterns": {
+        "figma_types": ["RECTANGLE", "FRAME"],
+        "name_keywords": ["image", "img", "photo", "picture", "avatar"],
+        "properties_indicators": ["has_image_fill"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "IMG_FUNC_001",
+            "title": "Image loads successfully",
+            "priority": "high",
+            "steps_template": [
+              "Load page containing {component_name}",
+              "Verify image loads and displays",
+              "Verify image is not broken (no broken icon)",
+              "Verify image aspect ratio is correct"
+            ],
+            "tags": ["loading", "display"]
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "IMG_A11Y_001",
+            "title": "Image has alt text",
+            "priority": "critical",
+            "wcag_criteria": ["1.1.1"],
+            "steps_template": [
+              "Inspect {component_name}",
+              "Verify alt attribute exists",
+              "Verify alt text is descriptive (not just 'image' or filename)",
+              "If decorative, verify alt='' (empty)",
+              "Test with screen reader - verify announces alt text"
+            ],
+            "tags": ["alt_text", "screen_reader", "wcag_a"]
+          }
+        ],
+        "edge_cases": [
+          {
+            "id": "IMG_EDGE_001",
+            "title": "Broken image handling",
+            "priority": "medium",
+            "steps_template": [
+              "Break image URL or remove image file",
+              "Load page",
+              "Verify graceful fallback (placeholder, alt text visible)",
+              "Verify layout is not broken"
+            ],
+            "tags": ["error_handling", "fallback"]
+          }
+        ]
+      }
+    },
+
+    "link": {
+      "description": "Hyperlink element",
+      "detection_patterns": {
+        "figma_types": ["TEXT"],
+        "name_keywords": ["link", "hyperlink", "anchor"],
+        "properties_indicators": ["underlined", "has_interactions"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "LINK_FUNC_001",
+            "title": "Link navigates to correct destination",
+            "priority": "critical",
+            "steps_template": [
+              "Click {component_name}",
+              "Verify navigates to correct URL/page",
+              "Verify back button returns to previous page"
+            ],
+            "tags": ["navigation", "smoke"]
+          },
+          {
+            "id": "LINK_FUNC_002",
+            "title": "External link opens in new tab",
+            "priority": "medium",
+            "steps_template": [
+              "Click external {component_name}",
+              "Verify opens in new tab (if target='_blank')",
+              "Verify original tab remains open"
+            ],
+            "tags": ["external", "new_tab"],
+            "applicable_when": "external_link"
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "LINK_A11Y_001",
+            "title": "Link text is descriptive",
+            "priority": "high",
+            "wcag_criteria": ["2.4.4"],
+            "steps_template": [
+              "Review link text for {component_name}",
+              "Verify text describes destination (not generic 'Click here')",
+              "Verify context is clear without surrounding text",
+              "Test with screen reader - verify makes sense out of context"
+            ],
+            "tags": ["link_text", "context", "wcag_a"]
+          },
+          {
+            "id": "LINK_A11Y_002",
+            "title": "Link has distinct visual appearance",
+            "priority": "high",
+            "wcag_criteria": ["1.4.1"],
+            "steps_template": [
+              "View {component_name}",
+              "Verify link is visually distinct from regular text",
+              "Verify uses underline, color, or other non-color indicator",
+              "Verify color contrast meets standards"
+            ],
+            "tags": ["visual", "contrast", "wcag_a"]
+          }
+        ]
+      }
+    },
+
+    "toggle_switch": {
+      "description": "Binary on/off switch control",
+      "detection_patterns": {
+        "figma_types": ["COMPONENT", "INSTANCE"],
+        "name_keywords": ["toggle", "switch"],
+        "visual_hints": ["pill_shape", "sliding_circle"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "TOGGLE_FUNC_001",
+            "title": "Toggle switches between on and off",
+            "priority": "critical",
+            "steps_template": [
+              "Click {component_name} when off",
+              "Verify switches to on state (visual indicator moves)",
+              "Click toggle when on",
+              "Verify switches to off state",
+              "Verify state change is immediate"
+            ],
+            "tags": ["interaction", "toggle", "smoke"]
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "TOGGLE_A11Y_001",
+            "title": "Toggle is keyboard accessible",
+            "priority": "critical",
+            "wcag_criteria": ["2.1.1"],
+            "steps_template": [
+              "Tab to {component_name}",
+              "Press Space key",
+              "Verify toggle switches state",
+              "Verify screen reader announces state change"
+            ],
+            "tags": ["keyboard", "wcag_a"]
+          }
+        ]
+      }
+    },
+
+    "tabs": {
+      "description": "Tabbed navigation interface",
+      "detection_patterns": {
+        "figma_types": ["FRAME", "GROUP"],
+        "name_keywords": ["tab", "tabs", "tabbed"],
+        "contains_multiple": ["clickable_headers"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "TABS_FUNC_001",
+            "title": "Tab switching displays correct content",
+            "priority": "critical",
+            "steps_template": [
+              "Click first tab in {component_name}",
+              "Verify first tab content displays",
+              "Click second tab",
+              "Verify second tab content displays",
+              "Verify first tab content is hidden",
+              "Verify active tab has visual indicator"
+            ],
+            "tags": ["navigation", "content_switching", "smoke"]
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "TABS_A11Y_001",
+            "title": "Tab keyboard navigation",
+            "priority": "critical",
+            "wcag_criteria": ["2.1.1"],
+            "steps_template": [
+              "Tab to {component_name}",
+              "Verify focus on first tab",
+              "Press Right/Left arrow keys",
+              "Verify moves focus between tabs",
+              "Press Enter or Space",
+              "Verify activates selected tab panel"
+            ],
+            "tags": ["keyboard", "arrow_navigation", "wcag_a"]
+          },
+          {
+            "id": "TABS_A11Y_002",
+            "title": "Tabs have proper ARIA roles",
+            "priority": "high",
+            "wcag_criteria": ["4.1.2"],
+            "steps_template": [
+              "Inspect {component_name}",
+              "Verify role='tablist' on container",
+              "Verify role='tab' on each tab",
+              "Verify role='tabpanel' on each panel",
+              "Verify aria-selected and aria-controls are used"
+            ],
+            "tags": ["aria", "roles", "wcag_a"]
+          }
+        ]
+      }
+    },
+
+    "breadcrumb": {
+      "description": "Navigation trail showing user's location",
+      "detection_patterns": {
+        "figma_types": ["FRAME", "GROUP"],
+        "name_keywords": ["breadcrumb", "breadcrumbs"],
+        "visual_hints": ["linked_items_with_separators"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "BREAD_FUNC_001",
+            "title": "Breadcrumb links navigate correctly",
+            "priority": "high",
+            "steps_template": [
+              "Click each link in {component_name} breadcrumb trail",
+              "Verify navigates to correct ancestor page",
+              "Verify current page is not a link (or is visually distinct)"
+            ],
+            "tags": ["navigation", "links"]
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "BREAD_A11Y_001",
+            "title": "Breadcrumb has proper semantic markup",
+            "priority": "medium",
+            "wcag_criteria": ["2.4.8"],
+            "steps_template": [
+              "Inspect {component_name}",
+              "Verify nav element with aria-label='Breadcrumb'",
+              "Verify uses ordered list (<ol>) structure",
+              "Verify separators are aria-hidden"
+            ],
+            "tags": ["semantic_html", "aria", "wcag_aa"]
+          }
+        ]
+      }
+    },
+
+    "tooltip": {
+      "description": "Informational popup on hover/focus",
+      "detection_patterns": {
+        "figma_types": ["FRAME", "COMPONENT"],
+        "name_keywords": ["tooltip", "popover", "hint"],
+        "visual_hints": ["small_overlay", "arrow_pointer"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "TIP_FUNC_001",
+            "title": "Tooltip appears on hover",
+            "priority": "high",
+            "steps_template": [
+              "Hover over trigger element for {component_name}",
+              "Verify tooltip appears after brief delay",
+              "Verify tooltip content is readable",
+              "Move mouse away",
+              "Verify tooltip disappears"
+            ],
+            "tags": ["hover", "display"]
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "TIP_A11Y_001",
+            "title": "Tooltip accessible via keyboard focus",
+            "priority": "high",
+            "wcag_criteria": ["1.4.13"],
+            "steps_template": [
+              "Tab to trigger element",
+              "Verify tooltip appears on focus",
+              "Verify tooltip content is announced by screen reader",
+              "Tab away",
+              "Verify tooltip disappears"
+            ],
+            "tags": ["keyboard", "focus", "wcag_aa"]
+          }
+        ]
+      }
+    },
+
+    "badge": {
+      "description": "Small count or status indicator",
+      "detection_patterns": {
+        "figma_types": ["COMPONENT", "TEXT"],
+        "name_keywords": ["badge", "pill", "tag", "chip"],
+        "visual_hints": ["small_rounded_container", "numeric_value"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "BADGE_FUNC_001",
+            "title": "Badge displays correct count",
+            "priority": "medium",
+            "steps_template": [
+              "Observe {component_name}",
+              "Verify badge shows accurate count/status",
+              "Trigger action that changes count",
+              "Verify badge updates in real-time"
+            ],
+            "tags": ["display", "count"]
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "BADGE_A11Y_001",
+            "title": "Badge content is announced",
+            "priority": "medium",
+            "wcag_criteria": ["1.3.1"],
+            "steps_template": [
+              "Test {component_name} with screen reader",
+              "Verify badge content is announced",
+              "Verify context is provided (e.g., '5 unread messages')"
+            ],
+            "tags": ["screen_reader", "wcag_a"]
+          }
+        ]
+      }
+    },
+
+    "alert": {
+      "description": "Notification or message to user",
+      "detection_patterns": {
+        "figma_types": ["FRAME", "COMPONENT"],
+        "name_keywords": ["alert", "notification", "message", "banner", "toast"],
+        "visual_hints": ["colored_background", "icon", "dismiss_button"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "ALERT_FUNC_001",
+            "title": "Alert displays with appropriate styling",
+            "priority": "high",
+            "steps_template": [
+              "Trigger action that shows {component_name}",
+              "Verify alert appears",
+              "Verify alert type is visually clear (error=red, success=green, etc.)",
+              "Verify message text is readable",
+              "Verify icon matches alert type"
+            ],
+            "tags": ["display", "styling", "feedback"]
+          },
+          {
+            "id": "ALERT_FUNC_002",
+            "title": "Alert can be dismissed",
+            "priority": "medium",
+            "steps_template": [
+              "Display {component_name}",
+              "Click dismiss/close button",
+              "Verify alert disappears",
+              "Verify alert doesn't reappear unless triggered again"
+            ],
+            "tags": ["dismiss", "interaction"],
+            "applicable_when": "dismissible"
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "ALERT_A11Y_001",
+            "title": "Alert is announced to screen readers",
+            "priority": "critical",
+            "wcag_criteria": ["4.1.3"],
+            "steps_template": [
+              "Trigger {component_name} with screen reader active",
+              "Verify alert content is immediately announced",
+              "Verify role='alert' or aria-live='assertive/polite' is used",
+              "Verify user doesn't need to navigate to alert to hear it"
+            ],
+            "tags": ["screen_reader", "aria_live", "wcag_a"]
+          }
+        ]
+      }
+    },
+
+    "progress_bar": {
+      "description": "Visual indicator of completion status",
+      "detection_patterns": {
+        "figma_types": ["FRAME", "COMPONENT"],
+        "name_keywords": ["progress", "bar", "loader", "loading"],
+        "visual_hints": ["horizontal_bar", "filled_portion"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "PROG_FUNC_001",
+            "title": "Progress bar updates accurately",
+            "priority": "high",
+            "steps_template": [
+              "Observe {component_name} during multi-step process",
+              "Verify bar fills progressively",
+              "Verify percentage/fraction updates (e.g., '3 of 5')",
+              "Verify reaches 100% upon completion"
+            ],
+            "tags": ["progress", "feedback"]
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "PROG_A11Y_001",
+            "title": "Progress is announced to screen readers",
+            "priority": "high",
+            "wcag_criteria": ["4.1.3"],
+            "steps_template": [
+              "Test {component_name} with screen reader",
+              "Verify role='progressbar' is used",
+              "Verify aria-valuenow, aria-valuemin, aria-valuemax are present",
+              "Verify progress updates are announced"
+            ],
+            "tags": ["screen_reader", "aria", "wcag_a"]
+          }
+        ]
+      }
+    },
+
+    "slider": {
+      "description": "Range input control",
+      "detection_patterns": {
+        "figma_types": ["COMPONENT", "FRAME"],
+        "name_keywords": ["slider", "range"],
+        "visual_hints": ["track_with_thumb", "horizontal_line"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "SLIDER_FUNC_001",
+            "title": "Slider adjusts value via drag",
+            "priority": "critical",
+            "steps_template": [
+              "Click and drag {component_name} thumb",
+              "Verify value updates as thumb moves",
+              "Verify value display updates (if present)",
+              "Release at desired position",
+              "Verify value is set"
+            ],
+            "tags": ["interaction", "drag", "smoke"]
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "SLIDER_A11Y_001",
+            "title": "Slider keyboard adjustment",
+            "priority": "critical",
+            "wcag_criteria": ["2.1.1"],
+            "steps_template": [
+              "Tab to {component_name}",
+              "Press Right/Up arrow keys",
+              "Verify value increases",
+              "Press Left/Down arrow keys",
+              "Verify value decreases",
+              "Press Home key - verify moves to minimum",
+              "Press End key - verify moves to maximum"
+            ],
+            "tags": ["keyboard", "arrow_navigation", "wcag_a"]
+          }
+        ]
+      }
+    },
+
+    "accordion": {
+      "description": "Collapsible content panels",
+      "detection_patterns": {
+        "figma_types": ["FRAME", "GROUP"],
+        "name_keywords": ["accordion", "collapse", "expand", "collapsible"],
+        "visual_hints": ["stacked_headers", "chevron_icons"]
+      },
+      "test_scenarios": {
+        "functional": [
+          {
+            "id": "ACCOR_FUNC_001",
+            "title": "Accordion expand and collapse",
+            "priority": "critical",
+            "steps_template": [
+              "Click header of collapsed panel in {component_name}",
+              "Verify panel expands and content is visible",
+              "Verify chevron/icon rotates to indicate state",
+              "Click header again",
+              "Verify panel collapses"
+            ],
+            "tags": ["expand", "collapse", "smoke"]
+          }
+        ],
+        "accessibility": [
+          {
+            "id": "ACCOR_A11Y_001",
+            "title": "Accordion keyboard control",
+            "priority": "high",
+            "wcag_criteria": ["2.1.1"],
+            "steps_template": [
+              "Tab to accordion header",
+              "Press Enter or Space",
+              "Verify panel expands",
+              "Press Enter or Space again",
+              "Verify panel collapses"
+            ],
+            "tags": ["keyboard", "wcag_a"]
+          },
+          {
+            "id": "ACCOR_A11Y_002",
+            "title": "Accordion has proper ARIA",
+            "priority": "high",
+            "wcag_criteria": ["4.1.2"],
+            "steps_template": [
+              "Inspect {component_name}",
+              "Verify headers have role='button'",
+              "Verify aria-expanded reflects state (true/false)",
+              "Verify aria-controls associates header with panel",
+              "Test with screen reader - verify state is announced"
+            ],
+            "tags": ["aria", "roles", "wcag_a"]
+          }
+        ]
+      }
+    }
+  },
+
+  "screen_patterns": {
+    "authentication_form": {
+      "description": "Login or sign-in screen",
+      "detection_criteria": {
+        "screen_name_keywords": ["login", "signin", "sign in", "sign-in", "auth", "authenticate"],
+        "required_components": ["input", "input", "button"],
+        "typical_labels": ["email", "password", "username"]
+      },
+      "test_scenarios": [
+        {
+          "id": "AUTH_FLOW_001",
+          "title": "Successful login with valid credentials",
+          "description": "Verify user can log in with correct email/username and password",
+          "priority": "critical",
+          "category": "positive_flow",
+          "steps_template": [
+            "Navigate to login screen",
+            "Enter valid email in Email field: '{valid_email}'",
+            "Enter valid password in Password field: '{valid_password}'",
+            "Click Login button",
+            "Verify redirect to home/dashboard",
+            "Verify user session is created",
+            "Verify user name/avatar appears in header"
+          ],
+          "tags": ["smoke", "authentication", "positive"]
+        },
+        {
+          "id": "AUTH_FLOW_002",
+          "title": "Login failure with invalid credentials",
+          "description": "Verify appropriate error for wrong credentials",
+          "priority": "critical",
+          "category": "negative_flow",
+          "steps_template": [
+            "Navigate to login screen",
+            "Enter invalid email or username",
+            "Enter incorrect password",
+            "Click Login button",
+            "Verify error message appears: 'Invalid email or password'",
+            "Verify user remains on login screen",
+            "Verify password field is cleared for security",
+            "Verify email field retains entered value"
+          ],
+          "tags": ["negative", "validation", "security"]
+        },
+        {
+          "id": "AUTH_FLOW_003",
+          "title": "Empty fields validation",
+          "description": "Verify validation for required fields",
+          "priority": "high",
+          "category": "validation",
+          "steps_template": [
+            "Leave Email and Password fields empty",
+            "Click Login button",
+            "Verify validation errors appear for both fields",
+            "Verify login is prevented",
+            "Fill Email field only",
+            "Click Login",
+            "Verify password field still shows error"
+          ],
+          "tags": ["validation", "required_fields"]
+        },
+        {
+          "id": "AUTH_EDGE_001",
+          "title": "Account lockout after multiple failed attempts",
+          "description": "Verify security measure against brute force",
+          "priority": "high",
+          "category": "security",
+          "steps_template": [
+            "Attempt login with wrong password 5 times",
+            "Verify account lockout message appears after 5th attempt",
+            "Verify login is disabled temporarily",
+            "Verify 'Forgot password?' link is still accessible",
+            "Wait for lockout period or verify unlock email is sent"
+          ],
+          "tags": ["security", "brute_force", "lockout"]
+        },
+        {
+          "id": "AUTH_EDGE_002",
+          "title": "Password visibility toggle",
+          "description": "Verify user can show/hide password",
+          "priority": "medium",
+          "category": "usability",
+          "steps_template": [
+            "Enter password in Password field",
+            "Verify password is masked (dots/asterisks)",
+            "Click 'Show password' icon/toggle",
+            "Verify password becomes visible as plain text",
+            "Click 'Hide password' icon",
+            "Verify password is masked again"
+          ],
+          "tags": ["usability", "password"],
+          "applicable_when": "has_show_password"
+        },
+        {
+          "id": "AUTH_FLOW_004",
+          "title": "Forgot password flow initiation",
+          "description": "Verify user can start password reset",
+          "priority": "high",
+          "category": "support_flow",
+          "steps_template": [
+            "Click 'Forgot password?' link",
+            "Verify navigates to password reset screen",
+            "Verify email field is present for reset instructions"
+          ],
+          "tags": ["password_reset", "support"],
+          "applicable_when": "has_forgot_password"
+        },
+        {
+          "id": "AUTH_FLOW_005",
+          "title": "Remember me functionality",
+          "description": "Verify persistent login option",
+          "priority": "medium",
+          "category": "usability",
+          "steps_template": [
+            "Check 'Remember me' checkbox",
+            "Login with valid credentials",
+            "Close browser",
+            "Reopen browser and navigate to site",
+            "Verify user is still logged in"
+          ],
+          "tags": ["persistent_session", "cookies"],
+          "applicable_when": "has_remember_me"
+        }
+      ]
+    },
+
+    "form_screen": {
+      "description": "General data entry form",
+      "detection_criteria": {
+        "screen_name_keywords": ["form", "create", "add", "edit", "register", "signup"],
+        "required_components": ["multiple_inputs", "submit_button"],
+        "typical_structure": "inputs_with_labels_and_submit"
+      },
+      "test_scenarios": [
+        {
+          "id": "FORM_FLOW_001",
+          "title": "Successful form submission with all valid data",
+          "priority": "critical",
+          "steps_template": [
+            "Fill all required fields with valid data",
+            "Fill optional fields (if any)",
+            "Click Submit button",
+            "Verify success message appears",
+            "Verify redirect to appropriate page (list, detail, etc.)",
+            "Verify data was saved correctly"
+          ],
+          "tags": ["smoke", "positive", "submission"]
+        },
+        {
+          "id": "FORM_FLOW_002",
+          "title": "Form validation for all required fields",
+          "priority": "critical",
+          "steps_template": [
+            "Leave all required fields empty",
+            "Attempt to submit form",
+            "Verify validation errors appear for all required fields",
+            "Verify submission is blocked",
+            "Verify focus moves to first error field",
+            "Fill fields one by one",
+            "Verify errors clear as fields are corrected"
+          ],
+          "tags": ["validation", "required_fields"]
+        },
+        {
+          "id": "FORM_FLOW_003",
+          "title": "Field-specific validations",
+          "priority": "high",
+          "steps_template": [
+            "Enter invalid email format in Email field",
+            "Enter text in Number field",
+            "Enter number below minimum or above maximum",
+            "Enter phone number in wrong format",
+            "Trigger validation (blur or submit)",
+            "Verify appropriate error messages for each field",
+            "Correct all errors",
+            "Verify form can now be submitted"
+          ],
+          "tags": ["validation", "format"]
+        },
+        {
+          "id": "FORM_FLOW_004",
+          "title": "Form reset/clear functionality",
+          "priority": "medium",
+          "steps_template": [
+            "Fill multiple fields in form",
+            "Click Reset or Clear button (if present)",
+            "Verify all fields are cleared",
+            "Verify no validation errors appear",
+            "Verify focus is appropriate"
+          ],
+          "tags": ["reset", "clear"],
+          "applicable_when": "has_reset_button"
+        },
+        {
+          "id": "FORM_EDGE_001",
+          "title": "Form behavior on back button after submission",
+          "priority": "medium",
+          "steps_template": [
+            "Submit form successfully",
+            "Click browser back button",
+            "Verify form does not resubmit",
+            "Verify appropriate state (cleared or showing previous values)"
+          ],
+          "tags": ["navigation", "back_button"]
+        }
+      ]
+    },
+
+    "list_view": {
+      "description": "List or grid of items",
+      "detection_criteria": {
+        "screen_name_keywords": ["list", "all", "overview", "index", "gallery"],
+        "required_components": ["repeated_items", "navigation"],
+        "typical_structure": "cards_or_rows"
+      },
+      "test_scenarios": [
+        {
+          "id": "LIST_FLOW_001",
+          "title": "List displays all items",
+          "priority": "critical",
+          "steps_template": [
+            "Navigate to list view",
+            "Verify items are displayed",
+            "Verify items show key information (title, preview, etc.)",
+            "Verify pagination or infinite scroll works (if applicable)"
+          ],
+          "tags": ["display", "smoke"]
+        },
+        {
+          "id": "LIST_FLOW_002",
+          "title": "Search functionality filters list",
+          "priority": "high",
+          "steps_template": [
+            "Enter search term in search box",
+            "Verify list filters to show matching items only",
+            "Verify 'no results' message if no matches",
+            "Clear search",
+            "Verify all items return"
+          ],
+          "tags": ["search", "filter"],
+          "applicable_when": "has_search"
+        },
+        {
+          "id": "LIST_FLOW_003",
+          "title": "Sort functionality reorders items",
+          "priority": "high",
+          "steps_template": [
+            "Click sort dropdown/button",
+            "Select sort option (e.g., 'Name A-Z')",
+            "Verify items reorder correctly",
+            "Select different sort option",
+            "Verify items reorder again"
+          ],
+          "tags": ["sort", "ordering"],
+          "applicable_when": "has_sort"
+        },
+        {
+          "id": "LIST_FLOW_004",
+          "title": "Item click navigates to detail view",
+          "priority": "critical",
+          "steps_template": [
+            "Click on an item in the list",
+            "Verify navigates to item detail page",
+            "Verify correct item details are shown",
+            "Click back",
+            "Verify returns to list view"
+          ],
+          "tags": ["navigation", "detail"]
+        },
+        {
+          "id": "LIST_EDGE_001",
+          "title": "Empty state displays when no items",
+          "priority": "medium",
+          "steps_template": [
+            "View list when no items exist (or filter to no results)",
+            "Verify empty state message displays",
+            "Verify message is helpful (e.g., 'No items found. Try creating one.')",
+            "Verify CTA button to add item (if applicable)"
+          ],
+          "tags": ["empty_state", "messaging"]
+        }
+      ]
+    },
+
+    "detail_view": {
+      "description": "Single item detail screen",
+      "detection_criteria": {
+        "screen_name_keywords": ["detail", "view", "profile", "info"],
+        "typical_structure": "single_item_information"
+      },
+      "test_scenarios": [
+        {
+          "id": "DETAIL_FLOW_001",
+          "title": "Detail view displays correct information",
+          "priority": "critical",
+          "steps_template": [
+            "Navigate to detail view for specific item",
+            "Verify all item details are displayed correctly",
+            "Verify images load properly",
+            "Verify related actions are available (Edit, Delete, etc.)"
+          ],
+          "tags": ["display", "smoke"]
+        },
+        {
+          "id": "DETAIL_FLOW_002",
+          "title": "Edit action navigates to edit form",
+          "priority": "high",
+          "steps_template": [
+            "Click Edit button",
+            "Verify navigates to edit form",
+            "Verify form is pre-populated with current values"
+          ],
+          "tags": ["edit", "navigation"],
+          "applicable_when": "has_edit"
+        },
+        {
+          "id": "DETAIL_FLOW_003",
+          "title": "Delete action removes item with confirmation",
+          "priority": "high",
+          "steps_template": [
+            "Click Delete button",
+            "Verify confirmation dialog appears",
+            "Click Cancel",
+            "Verify item is not deleted",
+            "Click Delete again",
+            "Confirm deletion",
+            "Verify item is deleted",
+            "Verify redirect to list view",
+            "Verify item no longer appears in list"
+          ],
+          "tags": ["delete", "confirmation"],
+          "applicable_when": "has_delete"
+        }
+      ]
+    },
+
+    "checkout_flow": {
+      "description": "E-commerce checkout process",
+      "detection_criteria": {
+        "screen_name_keywords": ["checkout", "cart", "payment", "order"],
+        "required_components": ["order_summary", "payment_fields", "submit_button"]
+      },
+      "test_scenarios": [
+        {
+          "id": "CHECKOUT_FLOW_001",
+          "title": "Complete checkout with valid information",
+          "priority": "critical",
+          "steps_template": [
+            "Add items to cart",
+            "Navigate to checkout",
+            "Fill shipping address",
+            "Select shipping method",
+            "Fill payment information",
+            "Review order summary",
+            "Click Place Order button",
+            "Verify order confirmation page appears",
+            "Verify confirmation email is sent"
+          ],
+          "tags": ["smoke", "e2e", "payment"]
+        },
+        {
+          "id": "CHECKOUT_FLOW_002",
+          "title": "Apply discount code",
+          "priority": "high",
+          "steps_template": [
+            "Proceed to checkout with items in cart",
+            "Enter valid discount code",
+            "Click Apply",
+            "Verify discount is applied to order total",
+            "Verify discount amount is clearly shown",
+            "Complete checkout",
+            "Verify final amount charged is discounted"
+          ],
+          "tags": ["discount", "promotion"],
+          "applicable_when": "has_discount_code"
+        }
+      ]
+    },
+
+    "dashboard": {
+      "description": "Overview/home screen with widgets and summaries",
+      "detection_criteria": {
+        "screen_name_keywords": ["dashboard", "home", "overview"],
+        "typical_structure": "multiple_widgets_or_cards"
+      },
+      "test_scenarios": [
+        {
+          "id": "DASH_FLOW_001",
+          "title": "Dashboard displays all widgets correctly",
+          "priority": "critical",
+          "steps_template": [
+            "Login and land on dashboard",
+            "Verify all widgets/cards load",
+            "Verify data in widgets is accurate and up-to-date",
+            "Verify charts/graphs render correctly (if present)"
+          ],
+          "tags": ["display", "smoke", "widgets"]
+        },
+        {
+          "id": "DASH_FLOW_002",
+          "title": "Dashboard quick actions work",
+          "priority": "high",
+          "steps_template": [
+            "Click quick action buttons (e.g., 'Create New', 'View All')",
+            "Verify appropriate navigation occurs",
+            "Verify actions are relevant to widget context"
+          ],
+          "tags": ["navigation", "quick_actions"]
+        }
+      ]
+    },
+
+    "search_results": {
+      "description": "Search results display screen",
+      "detection_criteria": {
+        "screen_name_keywords": ["search", "results", "find"],
+        "required_components": ["search_input", "results_list"]
+      },
+      "test_scenarios": [
+        {
+          "id": "SEARCH_FLOW_001",
+          "title": "Search returns relevant results",
+          "priority": "critical",
+          "steps_template": [
+            "Enter search query",
+            "Execute search",
+            "Verify results are displayed",
+            "Verify results are relevant to query",
+            "Verify result count is shown"
+          ],
+          "tags": ["search", "smoke"]
+        },
+        {
+          "id": "SEARCH_FLOW_002",
+          "title": "No results state displays appropriately",
+          "priority": "high",
+          "steps_template": [
+            "Search for query with no matches",
+            "Verify 'No results found' message appears",
+            "Verify message is helpful (suggests alternatives or spelling corrections)",
+            "Verify search can be modified"
+          ],
+          "tags": ["empty_state", "no_results"]
+        },
+        {
+          "id": "SEARCH_FLOW_003",
+          "title": "Faceted search filters results",
+          "priority": "medium",
+          "steps_template": [
+            "Perform initial search",
+            "Apply filter facet (category, price range, etc.)",
+            "Verify results update to match filter",
+            "Apply additional filter",
+            "Verify results further narrow",
+            "Remove filter",
+            "Verify results expand again"
+          ],
+          "tags": ["filter", "facets"],
+          "applicable_when": "has_filters"
+        }
+      ]
+    },
+
+    "settings_screen": {
+      "description": "User preferences and configuration",
+      "detection_criteria": {
+        "screen_name_keywords": ["settings", "preferences", "configuration", "account"],
+        "typical_structure": "grouped_options_with_toggles"
+      },
+      "test_scenarios": [
+        {
+          "id": "SETTINGS_FLOW_001",
+          "title": "Update settings and verify persistence",
+          "priority": "high",
+          "steps_template": [
+            "Change multiple settings (toggles, dropdowns, etc.)",
+            "Click Save button",
+            "Verify success message",
+            "Navigate away from settings",
+            "Return to settings",
+            "Verify changes were saved and are still applied"
+          ],
+          "tags": ["settings", "persistence"]
+        },
+        {
+          "id": "SETTINGS_FLOW_002",
+          "title": "Settings changes take effect immediately",
+          "priority": "medium",
+          "steps_template": [
+            "Change a visible setting (e.g., theme, language, notifications)",
+            "Verify change is reflected in UI immediately (or after save)",
+            "Navigate to other screens",
+            "Verify setting persists throughout app"
+          ],
+          "tags": ["settings", "real_time"]
+        }
+      ]
+    },
+
+    "error_page": {
+      "description": "Error states (404, 500, etc.)",
+      "detection_criteria": {
+        "screen_name_keywords": ["error", "404", "not found", "500"],
+        "typical_structure": "error_message_with_actions"
+      },
+      "test_scenarios": [
+        {
+          "id": "ERROR_FLOW_001",
+          "title": "Error page displays appropriate message",
+          "priority": "high",
+          "steps_template": [
+            "Navigate to non-existent URL (404)",
+            "Verify error page appears",
+            "Verify error message is user-friendly (not technical jargon)",
+            "Verify navigation options are provided (home link, search, etc.)"
+          ],
+          "tags": ["error_handling", "404"]
+        },
+        {
+          "id": "ERROR_FLOW_002",
+          "title": "Server error page handles gracefully",
+          "priority": "high",
+          "steps_template": [
+            "Trigger server error (500) if possible",
+            "Verify error page appears",
+            "Verify message explains issue without revealing technical details",
+            "Verify option to retry or return home"
+          ],
+          "tags": ["error_handling", "500"]
+        }
+      ]
+    },
+
+    "onboarding_flow": {
+      "description": "First-time user walkthrough",
+      "detection_criteria": {
+        "screen_name_keywords": ["onboarding", "welcome", "tutorial", "getting started"],
+        "typical_structure": "multi_step_wizard"
+      },
+      "test_scenarios": [
+        {
+          "id": "ONBOARD_FLOW_001",
+          "title": "Complete onboarding flow",
+          "priority": "high",
+          "steps_template": [
+            "Start onboarding process",
+            "Navigate through all steps",
+            "Verify progress indicator updates",
+            "Complete final step",
+            "Verify redirected to main app",
+            "Verify onboarding doesn't show again on next login"
+          ],
+          "tags": ["onboarding", "wizard", "first_time_user"]
+        },
+        {
+          "id": "ONBOARD_FLOW_002",
+          "title": "Skip onboarding option",
+          "priority": "medium",
+          "steps_template": [
+            "Start onboarding",
+            "Click 'Skip' or 'Skip tutorial' button",
+            "Verify confirmation if appropriate",
+            "Verify redirected to main app",
+            "Verify option to restart onboarding exists in settings/help"
+          ],
+          "tags": ["skip", "optional"],
+          "applicable_when": "has_skip_option"
+        }
+      ]
+    }
+  },
+
+  "cross_cutting_scenarios": {
+    "responsive_design": [
+      {
+        "id": "RESP_001",
+        "title": "Layout adapts to mobile viewport",
+        "priority": "high",
+        "steps_template": [
+          "View screen on mobile device or resize browser to mobile width (<768px)",
+          "Verify layout adjusts appropriately",
+          "Verify no horizontal scrolling required",
+          "Verify touch targets are at least 44x44px",
+          "Verify text is readable without zooming"
+        ],
+        "tags": ["responsive", "mobile"]
+      },
+      {
+        "id": "RESP_002",
+        "title": "Layout works on tablet and desktop",
+        "priority": "medium",
+        "steps_template": [
+          "View screen on tablet (768-1024px) and desktop (>1024px)",
+          "Verify layout uses available space effectively",
+          "Verify no awkward gaps or stretching",
+          "Verify images scale appropriately"
+        ],
+        "tags": ["responsive", "tablet", "desktop"]
+      }
+    ],
+    "loading_states": [
+      {
+        "id": "LOAD_001",
+        "title": "Loading indicators appear for async operations",
+        "priority": "high",
+        "steps_template": [
+          "Trigger action that requires server request",
+          "Verify loading indicator appears immediately",
+          "Verify UI is disabled/blocked during loading",
+          "Verify loading indicator disappears when complete",
+          "Verify content appears or error is shown"
+        ],
+        "tags": ["loading", "async", "ux"]
+      }
+    ],
+    "error_handling": [
+      {
+        "id": "ERR_001",
+        "title": "Network error handling",
+        "priority": "high",
+        "steps_template": [
+          "Disconnect network or use dev tools to simulate offline",
+          "Attempt action that requires network",
+          "Verify user-friendly error message appears",
+          "Verify option to retry",
+          "Reconnect network and retry",
+          "Verify action succeeds"
+        ],
+        "tags": ["error", "network", "offline"]
+      }
+    ]
+  },
+
+  "test_data_templates": {
+    "valid_email": ["user@example.com", "test.user+tag@domain.co.uk"],
+    "invalid_email": ["notanemail", "user@", "@domain.com", "user@domain"],
+    "valid_password": ["P@ssw0rd123", "SecurePass!456"],
+    "weak_password": ["123", "password", "abc"],
+    "special_characters": ["<script>alert('xss')</script>", "'; DROP TABLE users;--", "<img src=x onerror=alert(1)>"],
+    "unicode_strings": ["你好", "مرحبا", "Привет", "こんにちは"],
+    "emoji_strings": ["😀🎉", "👍💯", "❤️✨"],
+    "long_text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "whitespace_variations": ["  leading", "trailing  ", "  both  ", "middle   spaces"]
+  },
+
+  "usage_notes": {
+    "how_to_use": "1. Match Figma components to entries in ui_components using detection_patterns. 2. For each matched component, retrieve applicable test_scenarios. 3. Populate steps_template with actual component names and context. 4. Filter scenarios by priority and tags based on test coverage goals. 5. For detected screen patterns, add pattern-specific scenarios. 6. Generate final test cases by combining component and pattern scenarios.",
+    "priority_levels": {
+      "critical": "Must test - core functionality, smoke tests, blocking issues",
+      "high": "Should test - important features, common user paths",
+      "medium": "Test if time allows - less critical features, nice-to-haves",
+      "low": "Optional - edge cases, minor visual details"
+    }
+    
+  }
+}
