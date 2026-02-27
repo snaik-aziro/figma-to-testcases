@@ -1,0 +1,41 @@
+<mat-toolbar class="app-header" role="banner">
+  <div class="container-fluid header-container grid-3">
+    <div class="left-section">
+      <!-- keep this compact: logo + short name or just logo -->
+      <img class="app-logo" src="assets/logos/brand.svg" alt="logo" />
+      <span class="app-name">QA TG</span>
+    </div>
+
+    <!-- Center: Title + Subtitle -->
+    <div class="center-section">
+      <div class="title fw-semibold">QA Test Generator</div>
+      <div class="subtitle text-muted small">
+        AI‑Powered Test Case Generation from Figma &amp; PRD Documents
+      </div>
+    </div>
+
+    <!-- Right: Help | Divider | Notifications -->
+    <div class="right-icons d-flex align-items-center">
+      <button type="button" mat-icon-button class="icon-btn" matTooltip="Help" aria-label="Help" (click)="onHelp()">
+        <mat-icon fontSet="material-icons-outlined">help_outline</mat-icon>
+      </button>
+
+      <mat-divider class="vertical-divider" vertical aria-hidden="true"></mat-divider>
+
+      <button
+        type="button"
+        mat-icon-button
+        class="icon-btn"
+        matTooltip="Notifications"
+        aria-label="Notifications"
+        (click)="onNotification()"
+        [matBadge]="unreadCount || 0"
+        matBadgeOverlap="false"
+        matBadgeColor="primary"
+      >
+        <mat-icon fontSet="material-icons-outlined">notifications_none</mat-icon>
+      </button>
+    </div>
+
+  </div>
+</mat-toolbar>

@@ -1,0 +1,32 @@
+/* App shell: fills the viewport; content sits next to fixed-width sidebar */
+.app-shell {
+  min-height: 100%;
+  background: var(--color-bg);
+}
+
+/* Sidebar column: width set inside the sidebar component; keep stacking on small screens if needed */
+.sidebar-col {
+  position: sticky;
+  align-self: flex-start;
+  z-index: 2; /* sit above content scroll shadows if any */
+}
+
+/* Main content area */
+.app-content {
+  padding: var(--space-24);
+  min-width: 0; /* prevent overflow in flex */
+}
+
+/* Optional responsive: stack on very small screens */
+@media (max-width: 48rem) {
+  .app-shell {
+    display: block;
+  }
+  .sidebar-col {
+    position: static;
+    width: 100%;
+  }
+  .app-content {
+    padding: var(--space-16);
+  }
+}

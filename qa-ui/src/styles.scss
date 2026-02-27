@@ -1,0 +1,204 @@
+
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+
+html {
+  height: 100%;
+  @include mat.theme((
+    color: (
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+  height: 100%;
+}
+/* -------------------------------------------------------
+   GLOBAL DESIGN SYSTEM (REM‑Based)
+   styles.scss (replace your existing file)
+------------------------------------------------------- */
+
+/* 1. Base settings ------------------------------------------------------ */
+
+html {
+  font-size: 16px; /* 1rem = 16px */
+  scroll-behavior: smooth;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", system-ui, sans-serif;
+  background: var(--color-bg);
+  color: var(--text-main);
+  line-height: 1.5;
+}
+
+/* 2. CSS Variables ------------------------------------------------------ */
+
+:root {
+  /* Layout Tokens (REM‑based) */
+  --header-height: 6.75rem;        /* 108px */
+  --sidebar-width: 16rem;          /* 256px */
+  --container-max: 90rem;          /* 1440px */
+
+  /* Spacing Scale */
+  --space-2: 0.125rem;   /* 2px */
+  --space-4: 0.25rem;    /* 4px */
+  --space-6: 0.375rem;   /* 6px */
+  --space-8: 0.5rem;     /* 8px */
+  --space-12: 0.75rem;   /* 12px */
+  --space-16: 1rem;      /* 16px */
+  --space-20: 1.25rem;   /* 20px */
+  --space-24: 1.5rem;    /* 24px */
+  --space-32: 2rem;      /* 32px */
+
+  /* Corner Radius */
+  --radius-sm: 0.375rem; /* 6px */
+  --radius-md: 0.5rem;   /* 8px */
+  --radius-lg: 1rem;     /* 16px */
+
+  /* Borders */
+  --border-1: 0.0625rem; /* 1px */
+  --divider-thickness: 0.0625rem;
+
+  /* Typography */
+  --text-xs: 0.75rem;  /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-md: 1rem;     /* 16px */
+  --text-lg: 1.25rem;  /* 20px */
+  --text-xl: 1.75rem;  /* ~28px */
+
+  /* Colors */
+  --color-bg: #f8f7fb;
+  --color-card: #ffffff;
+  --color-border: #e3e3e3;
+
+  --text-main: #2c2c2c;
+  --text-muted: #6b7280;
+
+  --brand-blue: #0d47a1;
+  --brand-orange: #ff6a00;
+
+  --divider: #ddd;
+}
+
+/* 3. Utility Classes ------------------------------------------------------ */
+
+/* Spacing (Margin & Padding) */
+.m-1 { margin: var(--space-4) !important; }
+.m-2 { margin: var(--space-8) !important; }
+.m-3 { margin: var(--space-12) !important; }
+
+.p-1 { padding: var(--space-4) !important; }
+.p-2 { padding: var(--space-8) !important; }
+.p-3 { padding: var(--space-12) !important; }
+
+/* Gap Utilities */
+.gap-sm { gap: var(--space-8); }
+.gap-md { gap: var(--space-12); }
+.gap-lg { gap: var(--space-20); }
+
+/* Divider Utility */
+.divider-vertical {
+  width: var(--divider-thickness);
+  background: var(--divider);
+  height: 1.5rem;
+}
+
+.divider-horizontal {
+  height: var(--divider-thickness);
+  background: var(--divider);
+  width: 100%;
+}
+
+/* Text Utilities */
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.text-title {
+  font-size: var(--text-xl);
+  font-weight: 600;
+}
+
+.text-subtitle {
+  font-size: var(--text-md);
+  color: var(--text-muted);
+}
+
+/* Cards */
+.card-clean {
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  border: var(--border-1) solid var(--color-border);
+  padding: var(--space-16);
+}
+
+/* Buttons (override Bootstrap radius with REM units) */
+.btn {
+  border-radius: var(--radius-sm) !important;
+}
+
+/* Icon Buttons */
+.icon-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* 4. Scrollbar (Optional but modern) -------------------------------------- */
+
+::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #bcbcbc;
+  border-radius: 1rem;
+}
+
+/* 5. Layout Helpers -------------------------------------------------------- */
+
+.container-max {
+  max-width: var(--container-max);
+  margin-inline: auto;
+}
+
+.full-height {
+  min-height: 100vh;
+}
+
+/* 6. Remove Angular default outline but keep accessibility ---------------- */
+
+:focus {
+  outline: 0.125rem solid var(--brand-blue);
+  outline-offset: 0.125rem;
+}
