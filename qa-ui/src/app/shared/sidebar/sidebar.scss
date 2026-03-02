@@ -1,10 +1,10 @@
 /* Sidebar container */
 .app-sidebar {
-  width: 16rem; /* 256px */
+  width: 16rem;
   min-width: 16rem;
-  background: #2f56a1;          /* deep brand blue close to your mock */
+  background: #2f56a1;
   color: #ffffff;
-  height: calc(100vh - var(--header-height)); /* sits below your header */
+  height: calc(100vh - 4rem); /* sits below your header */
   position: sticky;
   top: var(--header-height);
   align-self: flex-start; /* if used next to content in a flex layout */

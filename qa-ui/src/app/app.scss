@@ -1,6 +1,6 @@
 /* App shell: fills the viewport; content sits next to fixed-width sidebar */
 .app-shell {
-  min-height: 100%;
+  min-height: calc(100% - 6.75rem);
   background: var(--color-bg);
 }
 
@@ -13,7 +13,7 @@
 
 /* Main content area */
 .app-content {
-  padding: var(--space-24);
+  // padding: var(--space-16);
   min-width: 0; /* prevent overflow in flex */
 }
 

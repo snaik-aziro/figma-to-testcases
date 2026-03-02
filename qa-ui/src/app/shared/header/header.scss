@@ -9,9 +9,13 @@
 /* Make it a 3-column grid: left | center | right */
 .header-container.grid-3 {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 14rem 1fr auto;
   align-items: center;
   gap: var(--space-12);
+}
+
+.app-header{
+  border-bottom: var(--border-1) solid var(--color-border);
 }
 
 /* Left: keep it small */
@@ -22,13 +26,13 @@
   gap: var(--space-8);
 
   .app-logo { height: 1.25rem; width: auto; } /* 20px -> small */
-  .app-name { font-size: 0.875rem; font-weight: 600; white-space: nowrap; }
+  .app-name { font-size: 0.875rem; font-weight: 600; white-space: nowrap; color: #2f56a1; }
 }
 
 /* Center: TRUE center with grid, no need for absolute */
 .center-section {
   grid-column: 2;
-  justify-self: center;
+  // justify-self: center;
   // text-align: center;
   line-height: 1.2;
   pointer-events: none;
