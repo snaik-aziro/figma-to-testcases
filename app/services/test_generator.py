@@ -1,4 +1,4 @@
-"""LLM-based test case generator using Google Gemini API."""
+"""LLM-based test case generator."""
 
 import json
 import os
@@ -14,7 +14,7 @@ settings = get_settings()
 
 
 class TestGenerator:
-    """AI-powered test case generator using Google Gemini with baseline knowledge."""
+    """Test case generator using Google Gemini. Baseline knowledge optional."""
 
     def __init__(self, api_key: Optional[str] = None, enable_baseline: bool = True):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY") or settings.gemini_api_key
@@ -163,15 +163,17 @@ class TestGenerator:
         }
 
     def _build_system_prompt(self, test_type: TestCaseType) -> str:
-        """Build system prompt based on test type."""
-        base_prompt = """You are an expert QA engineer specializing in creating comprehensive test cases. 
-Your test cases should be:
-- Clear and actionable
-- Include specific steps and expected results
-- Cover both happy path and edge cases
-- Be traceable to requirements when provided
+        """Build system prompt based on test type.
 
-Always respond with valid JSON in the specified format."""
+        This prompt instructs the model about expected test case quality and the strict
+        JSON schema. Keep guidance concise to reduce hallucinations.
+        """
+        base_prompt = (
+            "You are an expert QA engineer producing high-quality, actionable test cases. "
+            "Each test case must be precise, reproducible, traceable to requirements, and include clear preconditions, "
+            "explicit step-by-step actions, and explicit expected results. "
+            "When possible, include test data and priority. Reply ONLY with valid JSON exactly matching the schema provided."
+        )
 
         type_specific = {
             TestCaseType.FUNCTIONAL: """
@@ -306,7 +308,7 @@ Focus on edge case and boundary testing:
             Complete prompt for LLM
         """
         prompt_parts = [
-            f"Based on the following UI screen and requirements context, generate {test_count} {test_type.value} test cases.",
+            f"CONTEXT: The following information describes a UI screen and related requirements.\nGenerate exactly {test_count} {test_type.value} test cases that are actionable, traceable to requirements, and ready to execute.",
             "",
             context
         ]
@@ -351,7 +353,25 @@ Focus on edge case and boundary testing:
                         if steps:
                             prompt_parts.append(f"    Example: {' → '.join(steps[:2])}...")
         
-        prompt_parts.append("\nGenerate test cases ONLY in the following strict JSON format (no markdown, no code blocks, only JSON):")
+        prompt_parts.append("\nGenerate test cases ONLY in the following strict JSON format (no markdown, no code blocks, only JSON). Use double quotes, no trailing commas, and exactly the fields below:")
+        prompt_parts.append("\nSchema example:")
+        prompt_parts.append(json.dumps({
+            "test_cases": [
+                {
+                    "title": "Brief test case title",
+                    "description": "Detailed description of what this test verifies",
+                    "priority": "high",
+                    "preconditions": ["precondition 1"],
+                    "test_steps": [
+                        {"step_number": 1, "action": "Specific action to perform", "expected_result": "Expected outcome", "test_data": None}
+                    ],
+                    "expected_results": ["Final expected result"],
+                    "tags": ["tag1"],
+                    "requirement_ids": ["REQ-1"],
+                    "confidence_score": 0.85
+                }
+            ]
+        }, indent=2))
         
         return "\n".join(prompt_parts) + f"""
 
@@ -434,10 +454,7 @@ IMPORTANT REQUIREMENTS:
 
         # Extract JSON from response
         response_text = response.text
-        
-        # Debug output
-        print(f"   [DEBUG] Response length: {len(response_text)} chars")
-        print(f"   [DEBUG] First 200 chars: {response_text[:200]}")
+
         
         # Try to parse JSON from response
         try:
@@ -458,33 +475,22 @@ IMPORTANT REQUIREMENTS:
                 json_str = response_text[json_start:json_end]
                 
                 # Try to fix common JSON issues
-                # Replace single quotes with double quotes (if not within already quoted strings)
-                # Remove trailing commas before closing braces/brackets
                 json_str = json_str.replace('\n', ' ')  # Normalize newlines
-                
-                print(f"   [DEBUG] Extracted JSON length: {len(json_str)}")
-                print(f"   [DEBUG] JSON preview: {json_str[:300]}")
                 
                 try:
                     result = json.loads(json_str)
                     test_cases = result.get("test_cases", [])
                     
                     if not test_cases:
-                        print(f"   [DEBUG] No test_cases found in JSON. Keys: {list(result.keys())}")
                         return []
                     
                     # Add test type to each test case
                     for tc in test_cases:
                         tc["test_type"] = test_type.value
                     
-                    print(f"   [DEBUG] Successfully parsed {len(test_cases)} test cases")
                     return test_cases
                     
-                except json.JSONDecodeError as e:
-                    print(f"   [DEBUG] JSON parse error: {e}")
-                    print(f"   [DEBUG] Error position: char {e.pos}")
-                    print(f"   [DEBUG] Context around error: ...{json_str[max(0, e.pos-100):min(len(json_str), e.pos+100)]}...")
-                    
+                except json.JSONDecodeError:
                     # Try to repair incomplete JSON by adding missing closing brackets
                     try:
                         json_str_repaired = json_str.rstrip()
@@ -493,12 +499,8 @@ IMPORTANT REQUIREMENTS:
                         open_braces = json_str_repaired.count('{') - json_str_repaired.count('}')
                         open_brackets = json_str_repaired.count('[') - json_str_repaired.count(']')
                         
-                        print(f"   [DEBUG] Attempting repair: {open_braces} unclosed braces, {open_brackets} unclosed brackets")
-                        
-                        # Add closing brackets
                         json_str_repaired += ']' * open_brackets + '}' * open_braces
-                        
-                        print(f"   [DEBUG] Repaired JSON length: {len(json_str_repaired)}")
+                        result = json.loads(json_str_repaired)
                         
                         result = json.loads(json_str_repaired)
                         test_cases = result.get("test_cases", [])
@@ -506,14 +508,12 @@ IMPORTANT REQUIREMENTS:
                         if test_cases:
                             for tc in test_cases:
                                 tc["test_type"] = test_type.value
-                            print(f"   [DEBUG] Successfully parsed after repair: {len(test_cases)} test cases")
                             return test_cases
                     except Exception as e2:
                         print(f"   [DEBUG] Repair parsing failed: {type(e2).__name__}")
                     
-                    # Try to extract individual test cases from the broken JSON
+                    # Try to extract individual test cases from the JSON
                     try:
-                        print(f"   [DEBUG] Attempting to extract individual test cases from malformed JSON...")
                         import re
                         
                         # Find all test case objects
@@ -532,14 +532,12 @@ IMPORTANT REQUIREMENTS:
                                 continue
                         
                         if extracted_cases:
-                            print(f"   [DEBUG] Successfully extracted {len(extracted_cases)} test cases from malformed JSON")
                             return extracted_cases
                     except Exception as e3:
                         print(f"   [DEBUG] Individual extraction failed: {type(e3).__name__}")
                     
-                    # Last resort: Try to extract the test_cases array and re-wrap it
+                    # Last resort: extract the test_cases array and attempt to parse
                     try:
-                        print(f"   [DEBUG] Last resort: attempting to extract test_cases array...")
                         
                         # Find the test_cases array
                         array_start = json_str.find('"test_cases"')
@@ -564,10 +562,11 @@ IMPORTANT REQUIREMENTS:
                     except Exception as e4:
                         print(f"   [DEBUG] Array extraction failed: {type(e4).__name__}: {e4}")
             else:
-                print(f"   [DEBUG] Could not find JSON boundaries. json_start={json_start}, json_end={json_end}")
+                else:
+                    pass
                 
-        except Exception as e:
-            print(f"   [DEBUG] Unexpected error: {type(e).__name__}: {e}")
+        except Exception:
+            pass
 
         return []
 

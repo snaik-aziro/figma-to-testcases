@@ -9,24 +9,30 @@ import os
 import sys
 import asyncio
 import httpx
+import time
 from pathlib import Path
+import base64
 
-# Add app to path
+def get_base64_image(path):
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
+
+logo_base64 = get_base64_image("app/data/azirotech_logo.jpg")
+cover_base64 = get_base64_image("app/data/azirotech_cover.jpg")
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app.services.figma_client import FigmaClient
+from app.services.prd_analyzer import analyze_prd
 from app.services.document_parser import DocumentParser
 from app.services.test_generator import TestGenerator
 from app.services.cache_manager import CacheManager
 from app.config import get_settings
 
-# Load settings
 settings = get_settings()
 
-# Initialize cache manager
 cache_manager = CacheManager(cache_dir=".cache/figma_data")
 
-# Page config
 st.set_page_config(
     page_title="QA Test Generator",
     page_icon="🧪",
@@ -39,101 +45,205 @@ st.set_page_config(
     }
 )
 
-# Custom CSS
 st.markdown("""
 <style>
-    /* General App Styling */
-    .stApp {
-        background-color: #F0F2F6;
-    }
 
-    /* Main Headers */
-    .main-header {
-        font-size: 3rem;
-        font-weight: 700;
-        color: #1A237E; /* Dark Blue */
-        text-align: center;
-        margin-bottom: 0.5rem;
-        text-shadow: 2px 2px 4px #ccc;
-    }
-    .sub-header {
-        font-size: 1.2rem;
-        color: #546E7A; /* Blue Grey */
-        text-align: center;
-        margin-bottom: 2rem;
-    }
+/* ==========================================
+   AZIROTECH EXECUTIVE DESIGN SYSTEM
+   ========================================== */
 
-    /* Sidebar Styling */
-    .css-1d391kg {
-        background-color: #FFFFFF;
-        border-right: 1px solid #E0E0E0;
-    }
-    .st-emotion-cache-16txtl3 {
-        padding: 2rem 1rem;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    /* Card-like containers */
-    .test-case-card, .success-box, .info-box {
-        padding: 1.5rem;
-        background-color: #FFFFFF;
-        border-radius: 10px;
-        margin-bottom: 1rem;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        border-left: 5px solid;
-    }
+html, body, [class*="css"] {
+    font-family: "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
+}
 
-    .test-case-card { border-color: #1E88E5; } /* Blue */
-    .success-box { border-color: #4CAF50; } /* Green */
-    .info-box { border-color: #FFC107; } /* Amber */
+.stApp {
+    background-color: #F7F9FB;
+    color: #1C1F26;
+}
 
-    /* Test Step Styling */
-    .step-item {
-        padding: 0.75rem;
-        margin: 0.5rem 0;
-        background-color: #F8F9FA;
-        border: 1px solid #E0E0E0;
-        border-radius: 5px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        transition: all 0.2s ease-in-out;
-    }
-    .step-item:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.06);
-    }
-    .step-item strong {
-        color: #0D47A1; /* Darker Blue */
-    }
+/* ==========================================
+   TOP BRAND BAR
+   ========================================== */
 
-    /* Buttons */
-    .stButton>button {
-        border-radius: 8px;
-        font-weight: 600;
-        padding: 0.75rem 1.5rem;
-        transition: all 0.2s ease-in-out;
-    }
-    .stButton>button:hover {
-        transform: scale(1.02);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
+.top-bar {
+    display: flex;
+    align-items: center;
+    height: 60px;
+    padding: 0 2rem;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #EEF1F5;
+}
 
-    /* Expander styling */
-    .stExpander {
-        border: 1px solid #E0E0E0;
-        border-radius: 10px;
-        background-color: #FFFFFF;
-    }
-    .stExpander>div[role="button"] {
-        font-weight: 600;
-        color: #37474F; /* Blue Grey Dark */
-        padding: 1rem;
-    }
+.brand-logo {
+    height: 34px;
+}
+
+.cover-strip {
+    height: 80px;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.06;
+    margin-bottom: 2rem;
+}
+
+/* ==========================================
+   TYPOGRAPHY
+   ========================================== */
+
+.main-header {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #0B1F3A;
+    letter-spacing: 0.4px;
+    margin-bottom: 0.25rem;
+    text-align: left;
+}
+
+.sub-header {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #5F6B7A;
+    margin-bottom: 2.5rem;
+    text-align: left;
+}
+
+h2, h3 {
+    font-weight: 600;
+    color: #0B1F3A;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+/* ==========================================
+   SIDEBAR
+   ========================================== */
+
+section[data-testid="stSidebar"] {
+    background-color: #0B1F3A;
+    padding: 2rem 1.5rem;
+    border-right: 1px solid #1f365a;
+}
+
+section[data-testid="stSidebar"] * {
+    color: #FFFFFF;
+}
+
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3 {
+    font-weight: 600;
+}
+
+/* ==========================================
+   INPUT VISIBILITY FIX
+   ========================================== */
+
+input, textarea {
+    color: #1C1F26 !important;
+    background-color: #FFFFFF !important;
+}
+
+div[data-baseweb="select"] > div {
+    background-color: #FFFFFF !important;
+    color: #1C1F26 !important;
+}
+
+div[role="listbox"] {
+    background-color: #FFFFFF !important;
+    color: #1C1F26 !important;
+}
+
+/* ==========================================
+   CARD SYSTEM
+   ========================================== */
+
+.stExpander {
+    background: #FFFFFF;
+    border: 1px solid #EEF1F5;
+    border-radius: 6px;
+}
+
+.stExpander > div[role="button"] {
+    font-weight: 600;
+    padding: 1rem 1.5rem;
+    background: #F9FAFB;
+    border-radius: 6px;
+}
+
+/* Remove flashy effects */
+.step-item {
+    padding: 0.9rem 1rem;
+    margin: 0.6rem 0;
+    background-color: #F9FAFB;
+    border: 1px solid #EEF1F5;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.step-item strong {
+    color: #0B1F3A;
+}
+
+.step-item em {
+    color: #5F6B7A;
+}
+
+/* ==========================================
+   BUTTON SYSTEM
+   ========================================== */
+
+.stButton>button {
+    border-radius: 4px;
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    background-color: #0B1F3A;
+    color: #FFFFFF;
+    border: none;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.stButton>button:hover {
+    background-color: #1f365a;
+}
+
+.stButton>button:focus {
+    box-shadow: 0 0 0 2px #C6A7E;
+    outline: none;
+}
+
+/* Success alert refinement */
+.stAlert-success {
+    background-color: #E8F1EC !important;
+    color: #1C1F26 !important;
+    border: 1px solid #D6E5DA !important;
+    border-radius: 6px !important;
+}
+
+/* Divider rhythm */
+hr {
+    border: none;
+    height: 1px;
+    background-color: #EEF1F5;
+    margin: 2.5rem 0;
+}
 
 </style>
 """, unsafe_allow_html=True)
 
-# Header
-st.markdown('<div class="main-header"> QA Test Generator</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-header">AI-Powered Test Case Generation from Figma Designs & PRD Documents</div>', unsafe_allow_html=True)
+st.markdown(f"""
+<div class="top-bar">
+    <img src="data:image/jpeg;base64,{logo_base64}" class="brand-logo"/>
+</div>
+
+<div class="cover-strip" style="background-image: url('data:image/jpeg;base64,{cover_base64}')"></div>
+
+<div class="main-header">QA Test Generator</div>
+<div class="sub-header">
+AI-Powered Test Case Generation from Figma Designs & PRD Documents
+</div>
+""", unsafe_allow_html=True)
 
 # Initialize session state
 if 'screens' not in st.session_state:
@@ -250,6 +360,30 @@ with st.sidebar:
                     raw_screens = cached_data.get('screens', [])
                     figma_data_loaded = True
             
+            # If PRD was uploaded with the Analyze action, process it first so
+            # PRD signals are available for scoring.
+            if prd_file:
+                try:
+                    import tempfile
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(prd_file.name)[1]) as tmp_file:
+                        tmp_file.write(prd_file.getvalue())
+                        tmp_path = tmp_file.name
+                    parser = DocumentParser()
+                    file_extension = Path(tmp_path).suffix.lower()
+                    if file_extension == '.pdf':
+                        prd_result = parser.parse_pdf(tmp_path)
+                    elif file_extension == '.docx':
+                        prd_result = parser.parse_docx(tmp_path)
+                    elif file_extension == '.json':
+                        prd_result = parser.parse_json(tmp_path)
+                    else:
+                        with open(tmp_path, 'r', encoding='utf-8') as f:
+                            prd_result = {'full_text': f.read()}
+                    st.session_state.prd_context = prd_result.get('full_text', '')[:6000]
+                    os.unlink(tmp_path)
+                except Exception:
+                    st.session_state.prd_context = st.session_state.get('prd_context', None)
+
             # Apply component filtering and noise reduction
             if figma_data_loaded:
                 st.session_state.screens = raw_screens
@@ -266,9 +400,14 @@ with st.sidebar:
                     filtered_screens = []
                     total_components_after = 0
                     
+                    # Precompute PRD signals for clients (if available)
+                    prd_signals = None
+                    if st.session_state.get('prd_context'):
+                        prd_signals = analyze_prd(st.session_state.get('prd_context'))
+
                     for screen in raw_screens:
                         # Create a temporary client to use filtering logic
-                        temp_client = FigmaClient(access_token="dummy")
+                        temp_client = FigmaClient(access_token="dummy", prd_signals=prd_signals)
                         
                         # Apply filtering to components
                         if isinstance(screen, dict):
@@ -307,18 +446,15 @@ with st.sidebar:
         else:
             st.error("No Figma data selected. Please fetch, upload, or select a cached file in Step 1.")
 
-        # Load PRD data
-        if prd_file:
+        # Load PRD data (only if not already processed above)
+        if prd_file and not st.session_state.get('prd_context'):
             with st.spinner("Processing PRD..."):
                 try:
                     import tempfile
                     with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(prd_file.name)[1]) as tmp_file:
                         tmp_file.write(prd_file.getvalue())
                         tmp_path = tmp_file.name
-                    
                     parser = DocumentParser()
-                    
-                    # Determine file type and call the correct parser
                     file_extension = Path(tmp_path).suffix.lower()
                     if file_extension == '.pdf':
                         prd_result = parser.parse_pdf(tmp_path)
@@ -326,13 +462,12 @@ with st.sidebar:
                         prd_result = parser.parse_docx(tmp_path)
                     elif file_extension == '.json':
                         prd_result = parser.parse_json(tmp_path)
-                    else: # Assuming .txt or other plain text
-                        with open(tmp_path, "r", encoding="utf-8") as f:
-                            prd_result = {"full_text": f.read()}
-
-                    st.session_state.prd_context = prd_result.get('full_text', '')[:3000]
+                    else:
+                        with open(tmp_path, 'r', encoding='utf-8') as f:
+                            prd_result = {'full_text': f.read()}
+                    st.session_state.prd_context = prd_result.get('full_text', '')[:6000]
                     os.unlink(tmp_path)
-                    st.success("✅ PRD loaded successfully.")
+                    st.success(" PRD loaded successfully.")
                 except Exception as e:
                     st.error(f"Failed to process PRD: {e}")
 
@@ -413,38 +548,146 @@ with col2:
     st.header("Generated Test Cases")
     
     if st.session_state.screens:
+        # Option to generate for all screens
+        generate_all = st.checkbox("Generate for ALL screens", value=False, help="When enabled, generate test cases for every filtered screen. This will consume more tokens and make multiple LLM calls.")
+
+        # Percentile filter preview UI
+        st.markdown("---")
+        st.subheader("Preview component filtering")
+        drop_percent = st.slider("Drop lowest percent of components", min_value=0, max_value=90, value=10, step=5)
+        if st.button("Preview filtered components"):
+            if not st.session_state.get('screens'):
+                st.error("No screens loaded. Run Analyze Design & PRD first.")
+            else:
+                # Use the first screen as a preview
+                preview_screen = st.session_state.screens[0]
+                try:
+                    from app.services.figma_client import FigmaClient
+                    prd_signals = st.session_state.get('prd_signals', {})
+                    client = FigmaClient(access_token="dummy", prd_signals=prd_signals)
+                    comps = preview_screen.get('components', []) if isinstance(preview_screen, dict) else getattr(preview_screen, 'components', [])
+                    result = client.filter_components_percentile(comps, drop_percent)
+                    stats = result.get('stats', {})
+                    st.write(stats)
+                    kept = stats.get('total_components', 0) - stats.get('dropped_estimate', 0)
+                    st.success(f"Preview complete — kept approx {kept} of {stats.get('total_components', 0)} components. Cutoff: {stats.get('cutoff_score', 0):.1f}")
+                    # Show sample promoted/dropped items if available
+                    # Note: result.components is the filtered component tree
+                    dropped_sample = []
+                    try:
+                        # Collect some names from original vs filtered
+                        orig_names = [c.get('name', '') for c in comps[:50]]
+                        filtered_flat = []
+                        def _flatten(cs):
+                            for cc in cs:
+                                filtered_flat.append(cc.get('name', '') if isinstance(cc, dict) else getattr(cc, 'name', ''))
+                                children = cc.get('children', []) if isinstance(cc, dict) else getattr(cc, 'children', [])
+                                if children:
+                                    _flatten(children)
+                        _flatten(result.get('components', []))
+                        dropped_sample = [n for n in orig_names if n and n not in filtered_flat][:10]
+                    except Exception:
+                        dropped_sample = []
+                    if dropped_sample:
+                        st.write("Sample dropped components:")
+                        for s in dropped_sample:
+                            st.write(f"- {s}")
+                except Exception as e:
+                    st.error(f"Preview failed: {e}")
+
         if st.button(" Generate Test Cases", type="primary", use_container_width=True):
             if not settings.gemini_api_key:
                 st.error("Cannot generate tests: Gemini API Key is missing.")
-            elif selected_screen:
-                with st.spinner("AI is generating test cases..."):
-                    try:
-                        generator = TestGenerator()
-                        # Convert to dict if it's a Pydantic model
-                        if hasattr(selected_screen, 'model_dump'):
-                            screen_dict = selected_screen.model_dump()
-                        elif hasattr(selected_screen, 'dict'):
-                            screen_dict = selected_screen.dict()
-                        else:
-                            screen_dict = selected_screen
-                        
-                        test_cases = generator.generate_test_cases(
-                            screen=screen_dict,
-                            requirements=[],
-                            prd_context=st.session_state.prd_context
-                        )
-                        st.session_state.test_cases = test_cases
-                        if test_cases:
-                            st.success(f" Test cases generated! ({len(test_cases)} test cases)")
-                        else:
-                            st.warning(" No test cases were generated. Check the error details below.")
-                    except Exception as e:
-                        st.error(f"Error generating tests: {e}")
-                        import traceback
-                        with st.expander("Show Error Details"):
-                            st.code(traceback.format_exc())
             else:
-                st.warning("Please select a screen first")
+                # Decide which screens to process
+                screens_to_process = []
+                try:
+                    screens_to_process = filtered_screens if 'filtered_screens' in globals() and filtered_screens else st.session_state.screens
+                except Exception:
+                    screens_to_process = st.session_state.screens
+
+                if generate_all:
+                    # Warn about token usage and rate limits
+                    generator = TestGenerator()
+                    estimated_tokens = len(screens_to_process) * getattr(generator, 'max_tokens', settings.llm_max_tokens)
+                    st.warning(f"Generating for all screens ({len(screens_to_process)}). Estimated total tokens: {estimated_tokens}. Calls will be sequential with small delays to reduce rate-limit risk.")
+
+                    all_test_cases = []
+                    progress = st.progress(0)
+                    status = st.empty()
+                    errors = []
+
+                    for idx, screen in enumerate(screens_to_process, start=1):
+                        status.text(f"Processing screen {idx}/{len(screens_to_process)}: {screen.get('name', 'Unnamed')}")
+                        try:
+                            # Normalize screen to dict
+                            if hasattr(screen, 'model_dump'):
+                                screen_dict = screen.model_dump()
+                            elif hasattr(screen, 'dict'):
+                                screen_dict = screen.dict()
+                            else:
+                                screen_dict = screen
+
+                            # Generate tests (sequential to limit concurrent LLM calls)
+                            with st.spinner(f"Generating tests for {screen_dict.get('name', 'screen')}..."):
+                                tests = generator.generate_test_cases(screen=screen_dict, requirements=[], prd_context=st.session_state.prd_context)
+                                if tests:
+                                    # Attach screen metadata to each test case
+                                    for t in tests:
+                                        t['_source_screen'] = screen_dict.get('name')
+                                    all_test_cases.extend(tests)
+
+                        except Exception as e:
+                            errors.append({
+                                'screen': screen.get('name', 'unknown') if isinstance(screen, dict) else str(screen),
+                                'error': str(e)
+                            })
+                            # Continue processing remaining screens
+                        finally:
+                            # Small delay to reduce chance of rate-limiting/streaming issues
+                            time.sleep(1)
+                            progress.progress(int(idx / len(screens_to_process) * 100))
+                            status.text("")
+
+                    st.session_state.test_cases = all_test_cases
+                    if all_test_cases:
+                        st.success(f"Test cases generated for {len(all_test_cases)} total test cases across {len(screens_to_process)} screens.")
+                    if errors:
+                        st.warning(f"Some screens failed to generate: {len(errors)}. See details below.")
+                        with st.expander("Generation Errors"):
+                            st.write(errors)
+
+                else:
+                    # Single selected screen flow
+                    if selected_screen:
+                        with st.spinner("AI is generating test cases..."):
+                            try:
+                                generator = TestGenerator()
+                                # Convert to dict if it's a Pydantic model
+                                if hasattr(selected_screen, 'model_dump'):
+                                    screen_dict = selected_screen.model_dump()
+                                elif hasattr(selected_screen, 'dict'):
+                                    screen_dict = selected_screen.dict()
+                                else:
+                                    screen_dict = selected_screen
+
+                                test_cases = generator.generate_test_cases(
+                                    screen=screen_dict,
+                                    requirements=[],
+                                    prd_context=st.session_state.prd_context
+                                )
+                                st.session_state.test_cases = test_cases
+                                if test_cases:
+                                    st.success(f" Test cases generated! ({len(test_cases)} test cases)")
+                                else:
+                                    st.warning(" No test cases were generated. Check the error details below.")
+                            except Exception as e:
+                                st.error(f"Error generating tests: {e}")
+                                import traceback
+                                with st.expander("Show Error Details"):
+                                    st.code(traceback.format_exc())
+                    else:
+                        st.warning("Please select a screen first")
     
     # Display test cases
     if st.session_state.test_cases:
@@ -510,14 +753,70 @@ with col2:
                 file_name=f"test_cases_{screen_name}.json",
                 mime="application/json"
             )
+            
+        # Evaluate button: call backend evaluate endpoint or fallback to local evaluator
+        prefer_premium = st.checkbox("Prefer premium evaluator (may require API key)", value=False)
+        if st.button(" Evaluate Testcases", use_container_width=True):
+            if not st.session_state.get('test_cases'):
+                st.error("No test cases available to evaluate. Generate tests first.")
+            else:
+                with st.spinner("Running evaluation..."):
+                    prd_payload = {"full_text": st.session_state.get('prd_context') or ""}
+                    tests_payload = {"test_cases": st.session_state.get('test_cases')}
+                    eval_result = None
+                    # Try backend HTTP endpoint first
+                    try:
+                        import httpx
+                        resp = httpx.post(
+                            "http://localhost:8000/api/tests/evaluate",
+                            json={"prd": prd_payload, "tests": tests_payload, "prefer_premium": prefer_premium},
+                            timeout=30.0
+                        )
+                        if resp.status_code == 200:
+                            eval_result = resp.json()
+                        else:
+                            st.warning(f"Server evaluate returned {resp.status_code}: {resp.text}")
+                    except Exception:
+                        eval_result = None
+
+                    # Fallback to local evaluator
+                    if not eval_result:
+                        try:
+                            from app.services.evaluator import Evaluator
+                            evaluator = Evaluator.with_fallback()
+                            eval_result = evaluator.evaluate(prd_payload, tests_payload, prefer_premium=False)
+                        except Exception as e:
+                            st.error(f"Evaluation failed: {e}")
+                            eval_result = None
+
+                    if eval_result:
+                        st.session_state.evaluation = eval_result
+                        st.session_state.evaluation_metrics = eval_result.get('metrics', {})
+                        st.success("Evaluation complete")
+
+        # Show evaluation if present
+        if st.session_state.get('evaluation_metrics'):
+            with st.expander("Evaluation Metrics", expanded=True):
+                st.json(st.session_state.get('evaluation_metrics'))
     else:
         if st.session_state.screens:
             st.info(" Click 'Generate Test Cases' to create tests for the selected screen")
+
+# KPI Metrics Dashboard
+colA, colB, colC = st.columns(3)
+with colA:
+    st.metric("Total Screens", len(st.session_state.screens or []))
+with colB:
+    st.metric("Generated Tests", len(st.session_state.test_cases or []))
+with colC:
+    st.metric("System Status", "Operational")
+
+st.markdown("---")
 
 # Footer
 st.divider()
 st.markdown("""
 <div style="text-align: center; color: #888; font-size: 0.9rem;">
-    Figma Test Generator v1.0
+    Figma Test Generator v2.0
 </div>
 """, unsafe_allow_html=True)

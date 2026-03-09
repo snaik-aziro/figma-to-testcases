@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     
     # Noise Reduction Settings
     enable_component_filtering: bool = True
-    component_relevance_threshold: float = 20.0  # Minimum score to keep component
+    component_relevance_threshold: float = 40.0  # Minimum score to keep component (raised to 40)
     max_component_depth: int = 10
     
     # Test Generation Settings

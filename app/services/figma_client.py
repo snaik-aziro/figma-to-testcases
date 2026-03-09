@@ -14,12 +14,14 @@ settings = get_settings()
 class FigmaClient:
     """Client for interacting with the Figma API."""
 
-    def __init__(self, access_token: Optional[str] = None, enable_filtering: bool = True):
+    def __init__(self, access_token: Optional[str] = None, enable_filtering: bool = True, prd_signals: Optional[Dict[str, Any]] = None):
         self.access_token = access_token or settings.figma_access_token
         self.base_url = settings.figma_api_base_url
         self.headers = {"X-Figma-Token": self.access_token}
         self.enable_filtering = enable_filtering and settings.enable_component_filtering
         self.relevance_threshold = settings.component_relevance_threshold
+        # PRD-derived signals (optional). Expected shape: { 'keywords': {kw: weight}, 'intents': [...] }
+        self.prd_signals = prd_signals or {}
 
     @staticmethod
     def extract_file_id(file_id_or_url: str) -> str:
@@ -170,144 +172,188 @@ class FigmaClient:
         }
     
     def _calculate_component_relevance(self, component: ComponentData) -> float:
-        """Calculate relevance score for a component to determine if it should be included.
-        
-        Higher scores indicate more relevant/testable components.
-        Decorative elements get lower scores.
-        
+        """Composite priority score (0-100) — combines type heuristics, text, interactions,
+        area and visibility. This is the recommended priority metric used by percentile
+        filtering and UI preview.
+
         Args:
-            component: Component to score (ComponentData object or dict)
-            
+            component: component dict or object
         Returns:
-            Relevance score (0-100)
+            normalized score between 0 and 100
         """
-        score = 0.0
-        
-        # Helper to get attribute from dict or object
+
+        # Helpers
         def get_attr(obj, key, default=None):
             if isinstance(obj, dict):
                 return obj.get(key, default)
             return getattr(obj, key, default)
-        
-        # Helper to get from properties safely
+
         def get_prop(obj, key, default=None):
             props = get_attr(obj, 'properties', {})
             if isinstance(props, dict):
                 return props.get(key, default)
             return getattr(props, key, default) if props else default
-        
+
+        def area_of(obj):
+            pos = get_attr(obj, 'position', {})
+            width = pos.get('width', 0) if isinstance(pos, dict) else getattr(pos, 'width', 0)
+            height = pos.get('height', 0) if isinstance(pos, dict) else getattr(pos, 'height', 0)
+            try:
+                return max(0.0, float(width) * float(height))
+            except Exception:
+                return 0.0
+
         component_type = get_attr(component, 'component_type', 'unknown').lower()
-        text = get_prop(component, 'text', '')
-        
-        # FUNCTIONAL COMPONENTS - These are testable
-        # Buttons, inputs, form controls
-        critical_types = {
-            'button': 90,
-            'input': 85,
-            'textarea': 85,
-            'dropdown': 80,
-            'select': 80,
-            'checkbox': 75,
-            'radio': 75,
-            'toggle': 75,
-            'switch': 75,
-            'slider': 70,
+        text = get_prop(component, 'text', '') or ''
+
+        # Base type mapping (same as before but used as base)
+        type_score_map = {
+            # critical
+            'button': 90, 'input': 85, 'textarea': 85, 'dropdown': 80, 'select': 80,
+            'checkbox': 75, 'radio': 75, 'toggle': 75, 'switch': 75, 'slider': 70,
+            # important
+            'modal': 65, 'dialog': 65, 'form': 60, 'table': 60, 'list': 55,
+            'navigation': 55, 'card': 50, 'container': 40, 'frame': 35, 'group': 30,
+            # content
+            'text': 20, 'label': 20, 'heading': 25, 'paragraph': 20, 'image': 25,
+            'icon': 15, 'link': 40,
+            # decorative
+            'rectangle': 0, 'ellipse': 0, 'circle': 0, 'line': 0, 'shape': 0,
+            'polygon': 0, 'vector': 5, 'divider': 5, 'spacer': 0, 'separator': 5,
+            'background': 0, 'overlay': 0
         }
-        
-        # Important structural components
-        important_types = {
-            'modal': 65,
-            'dialog': 65,
-            'form': 60,
-            'table': 60,
-            'list': 55,
-            'navigation': 55,
-            'card': 50,
-            'container': 40,  # Generic container, might have important content
-            'frame': 35,
-            'group': 30,
-        }
-        
-        # Content components
-        content_types = {
-            'text': 20,  # Low score by itself, but has value
-            'label': 20,
-            'heading': 25,
-            'paragraph': 20,
-            'image': 25,
-            'icon': 15,  # Icons are often decorative
-            'link': 40,  # Links are interactive
-        }
-        
-        # Decorative/low-value components
-        decorative_types = {
-            'rectangle': -50,
-            'ellipse': -50,
-            'circle': -50,
-            'line': -50,
-            'shape': -50,
-            'polygon': -50,
-            'vector': -40,
-            'divider': -20,
-            'spacer': -50,
-            'separator': -20,
-            'background': -50,
-            'overlay': -30,
-        }
-        
-        # Assign score based on component type
-        if component_type in critical_types:
-            score = critical_types[component_type]
-        elif component_type in important_types:
-            score = important_types[component_type]
-        elif component_type in content_types:
-            score = content_types[component_type]
-        elif component_type in decorative_types:
-            score = decorative_types[component_type]
-        else:
-            # Unknown types - give a small positive score to be safe
-            score = 15
-        
-        # BOOST SCORE for components with meaningful text
+
+        base = type_score_map.get(component_type, 15)
+
+        # Text boost
+        text_boost = 0
         if text and len(text.strip()) > 0:
-            text_length = len(text.strip())
-            # Components with substantive text are more important
-            if text_length > 5:
-                score += min(20, text_length // 3)  # Cap at +20
-            # But penalize placeholder-like text
+            tl = len(text.strip())
+            if tl > 5:
+                text_boost = min(20, tl // 3)
             if any(x in text.lower() for x in ['icon', 'btn', '<', '>', '[', ']']):
-                score -= 5
-        
-        # PENALIZE very small/empty containers
-        if component_type in ['container', 'frame', 'group']:
-            if not text or len(text.strip()) == 0:
-                score -= 10  # Generic empty container
-        
-        # Interactive elements get a boost
-        if get_prop(component, 'has_interactions', False):
-            score += 25
-        
-        # Check visibility
-        if not get_prop(component, 'visible', True):
-            score -= 50
-        
-        # Check opacity
+                text_boost -= 5
+
+        # Interaction boost (use interaction_count if available)
+        interaction_count = get_prop(component, 'interaction_count', 0) or 0
+        interaction_boost = min(30, int(interaction_count) * 8) if interaction_count else (25 if get_prop(component, 'has_interactions', False) else 0)
+
+        # Visibility / opacity penalties
+        visible = get_prop(component, 'visible', True)
         opacity = get_prop(component, 'opacity', 1.0)
+        visibility_penalty = 0
+        if not visible:
+            visibility_penalty -= 70
         if opacity is not None and opacity < 0.3:
-            score -= 15
-        
-        # Find the best match score from all type groups
-        all_scores = [
-            critical_types.get(component_type, 0),
-            important_types.get(component_type, 0),
-            content_types.get(component_type, 0),
-            decorative_types.get(component_type, 0)
-        ]
-        
-        score = max(all_scores) if all_scores else 0
-        
-        # Adjust score based on other properties
-        return max(0, score)  # Don't return negative scores
+            visibility_penalty -= 15
+
+        # Area penalty: very small elements (icons, pixels) get penalized
+        area = area_of(component)
+        area_penalty = 0
+        if area > 0:
+            # Choose thresholds empirically: elements < 400 px^2 are likely small icons
+            if area < 400:
+                area_penalty -= 15
+            elif area < 1600:
+                area_penalty -= 5
+
+        # Compose final raw score
+        raw = base + text_boost + interaction_boost + visibility_penalty + area_penalty
+
+        # PRD-derived boost: if PRD signals are present, match keywords against
+        # component type, name and text. `self.prd_signals` expected to contain
+        # normalized keyword weights in 0..1 range.
+        prd_boost = 0.0
+        try:
+            kws = self.prd_signals.get('keywords', {}) if isinstance(self.prd_signals, dict) else {}
+            if kws:
+                comp_name = get_attr(component, 'name', '') or ''
+                comp_name = comp_name.lower()
+                comp_text = text.lower() if isinstance(text, str) else ''
+                comp_type = component_type.lower() if isinstance(component_type, str) else ''
+                score_sum = 0.0
+                for kw, w in kws.items():
+                    kw_l = kw.lower()
+                    if kw_l and (kw_l in comp_name or kw_l in comp_text or kw_l in comp_type):
+                        try:
+                            score_sum += float(w)
+                        except Exception:
+                            continue
+                # Scale summed normalized weights to a boost (max ~25)
+                prd_boost = min(25.0, score_sum * 25.0)
+        except Exception:
+            prd_boost = 0.0
+
+        raw += prd_boost
+
+        # Normalize to 0-100
+        score = max(0.0, min(100.0, float(raw)))
+        return score
+
+    # New API: percentile-based filtering
+    def filter_components_percentile(self, components: List[ComponentData], drop_percent: float = 10.0) -> Dict[str, Any]:
+        """Filter components by dropping the bottom `drop_percent` percentile.
+
+        Returns a dict with `components` (filtered list) and `stats` for UI preview.
+        """
+        # Flatten components to compute global scores
+        def flatten(comps: List[ComponentData], out: List[ComponentData]):
+            for c in comps:
+                out.append(c)
+                children = c.get('children', []) if isinstance(c, dict) else getattr(c, 'children', [])
+                if children:
+                    flatten(children, out)
+
+        all_comps: List[ComponentData] = []
+        flatten(components, all_comps)
+
+        # Compute scores
+        scores = []
+        comp_to_score = {}
+        for c in all_comps:
+            s = self._calculate_component_relevance(c)
+            comp_to_score[id(c)] = s
+            scores.append(s)
+
+        if not scores:
+            return { 'components': components, 'stats': { 'dropped': 0, 'total': 0 } }
+
+        # Determine cutoff
+        scores_sorted = sorted(scores)
+        k = int(len(scores_sorted) * (drop_percent / 100.0))
+        cutoff = scores_sorted[k] if k < len(scores_sorted) else scores_sorted[-1]
+
+        # Use modified recursive filter (promote children when parent filtered)
+        def apply_filter(comps: List[ComponentData]) -> List[ComponentData]:
+            out = []
+            for comp in comps:
+                score = comp_to_score.get(id(comp), self._calculate_component_relevance(comp))
+                children = comp.get('children', []) if isinstance(comp, dict) else getattr(comp, 'children', [])
+                kept_children = apply_filter(children) if children else []
+
+                if score > cutoff:
+                    # attach kept children
+                    if isinstance(comp, dict):
+                        comp['children'] = kept_children
+                    else:
+                        comp.children = kept_children
+                    out.append(comp)
+                else:
+                    # promote kept children
+                    out.extend(kept_children)
+            return out
+
+        filtered = apply_filter(components)
+
+        dropped = len(all_comps) - sum(1 for c in filtered if c in all_comps)
+        stats = {
+            'total_components': len(all_comps),
+            'drop_percent': drop_percent,
+            'cutoff_score': cutoff,
+            'dropped_estimate': dropped
+        }
+
+        return { 'components': filtered, 'stats': stats }
     
     def _filter_components_by_relevance(self, components: List[ComponentData]) -> List[ComponentData]:
         """Filter out low-relevance components to reduce noise.
@@ -323,16 +369,18 @@ class FigmaClient:
         
         filtered = []
         scores_dist = {'high': 0, 'medium': 0, 'low': 0, 'filtered': 0}
-        
+
         for component in components:
-            score = self._calculate_component_relevance(component)
-            
-            # Add score to component for display purposes
+            # Compute and normalize score to 0-100
+            raw_score = self._calculate_component_relevance(component)
+            score = max(0, min(100, raw_score))
+
+            # Attach score for UI/debug
             if isinstance(component, dict):
                 component['relevance_score'] = score
             else:
                 component.relevance_score = score
-            
+
             # Track score distribution
             if score >= 70:
                 scores_dist['high'] += 1
@@ -342,22 +390,28 @@ class FigmaClient:
                 scores_dist['low'] += 1
             else:
                 scores_dist['filtered'] += 1
-            
-            # Keep component if it meets threshold
+            # Always recurse into children to avoid dropping important children under decorative parents
+            children = component.get('children', []) if isinstance(component, dict) else getattr(component, 'children', [])
+            filtered_children = []
+            if children:
+                filtered_children = self._filter_components_by_relevance(children)
+
+            # If component meets threshold, include it and attach filtered children
             if score >= self.relevance_threshold:
-                # Recursively filter children
-                children = component.get('children', []) if isinstance(component, dict) else getattr(component, 'children', [])
-                if children:
-                    filtered_children = self._filter_components_by_relevance(children)
-                    if isinstance(component, dict):
-                        component['children'] = filtered_children
-                    else:
-                        component.children = filtered_children
+                if isinstance(component, dict):
+                    component['children'] = filtered_children
+                else:
+                    component.children = filtered_children
                 filtered.append(component)
-        
-        # Debug: Print score distribution
+            else:
+                if filtered_children:
+                    # If parent is dict, extend with dict children; else extend with objects
+                    for child in filtered_children:
+                        filtered.append(child)
+
         print(f"[FILTERING DEBUG] Score distribution: High={scores_dist['high']}, Medium={scores_dist['medium']}, Low={scores_dist['low']}, Filtered={scores_dist['filtered']}")
         print(f"[FILTERING DEBUG] Threshold: {self.relevance_threshold}")
+        print(f"[FILTERING DEBUG] Returned components: {len(filtered)} (out of {len(components)})")
         
         return filtered
 
