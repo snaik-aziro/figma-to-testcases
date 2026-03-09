@@ -1,0 +1,48 @@
+<nav class="app-sidebar" role="navigation" aria-label="Primary">
+  <div class="sidebar-inner d-flex flex-column">
+
+    <!-- Nav list -->
+    <ul class="nav-list list-unstyled m-0 p-0">
+      @for (item of navItems; track item.label) {
+        <li class="nav-item">
+          <a
+            class="nav-link d-flex align-items-center"
+            [routerLink]="item.link"
+            [routerLinkActive]="'active'"
+            [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+            [attr.aria-disabled]="item.disabled ? true : null"
+            [class.disabled]="item.disabled"
+          >
+            <mat-icon fontSet="material-icons-outlined" class="nav-icon" aria-hidden="true">
+              {{ item.icon }}
+            </mat-icon>
+
+            @if (!collapsed) {
+              <span class="nav-label">{{ item.label }}</span>
+            }
+          </a>
+        </li>
+      } @empty {
+        <li class="nav-item text-muted px-2 py-1">No items</li>
+      }
+    </ul>
+
+    <!-- Footer Help -->
+    <div class="sidebar-footer mt-auto">
+      <mat-divider class="footer-divider" aria-hidden="true"></mat-divider>
+
+      <a class="help-link d-flex align-items-center"
+         [routerLink]="['/help']"
+         matTooltip="Help & Accessibility"
+         aria-label="Help and Accessibility">
+        <mat-icon fontSet="material-icons-outlined" class="help-icon" aria-hidden="true">
+          help_outline
+        </mat-icon>
+
+        @if (!collapsed) {
+          <span class="help-text">Help & Accessibility</span>
+        }
+      </a>
+    </div>
+  </div>
+</nav>
