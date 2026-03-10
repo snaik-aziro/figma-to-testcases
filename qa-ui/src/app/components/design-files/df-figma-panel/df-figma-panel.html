@@ -1,0 +1,48 @@
+<mat-card class="figma-panel" role="region" aria-label="Figma connection">
+  <div class="panel-head">
+    <h3 class="panel-title">Connect Figma Design</h3>
+    <button mat-stroked-button >Test Connection</button>
+  </div>
+
+  <div class="form-grid">
+
+    <div class="full">
+      <label class="form-label" for="figmaUrl">File URL</label>
+      <input id="figmaUrl" class="form-control form-control-compact" placeholder="https://www.figma.com/file/..." />
+    </div>
+
+    <div class="half">
+      <label class="form-label" for="figmaPages">Select Figma Pages</label>
+      <select id="figmaPages" class="form-select form-select-compact">
+        <option selected>All Pages</option>
+        <option>Login</option>
+        <option>Dashboard</option>
+        <option>Cart</option>
+      </select>
+    </div>
+    <div class="half"></div>
+  </div>
+
+  <div class="options">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" id="cacheCheck" checked />
+      <label class="form-check-label" for="cacheCheck">Cache design for reuse</label>
+    </div>
+
+    <button class="link-btn" type="button">
+      <mat-icon fontSet="material-icons-outlined">visibility</mat-icon>
+      <span>View cached designs</span>
+    </button>
+  </div>
+
+  <div class="alert error" role="alert">
+    <mat-icon fontSet="material-icons-outlined">error_outline</mat-icon>
+    <div class="text">
+      <div class="title">Unable to fetch Figma file.</div>
+      <ul class="m-0">
+        <li>Check access token permissions</li>
+        <li>Ensure file access is enabled</li>
+      </ul>
+    </div>
+  </div>
+</mat-card>

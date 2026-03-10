@@ -1,4 +1,4 @@
-/* container max width (1440px -> 90rem) */
+/* Container */
 .header-container {
   max-width: var(--container-max);
   width: 100%;
@@ -6,36 +6,33 @@
   position: relative;
 }
 
-/* Make it a 3-column grid: left | center | right */
 .header-container.grid-3 {
   display: grid;
-  grid-template-columns: 14rem 1fr auto;
+  grid-template-columns: 14rem 1fr auto; /* left | center | right */
   align-items: center;
   gap: var(--space-12);
 }
 
-.app-header{
+.app-header {
   border-bottom: var(--border-1) solid var(--color-border);
 }
 
-/* Left: keep it small */
+/* Left: brand */
 .left-section {
   min-width: 0;
   display: inline-flex;
   align-items: center;
   gap: var(--space-8);
 
-  .app-logo { height: 1.25rem; width: auto; } /* 20px -> small */
+  .app-logo { height: 1.25rem; width: auto; } /* 20px */
   .app-name { font-size: 0.875rem; font-weight: 600; white-space: nowrap; color: #2f56a1; }
 }
 
-/* Center: TRUE center with grid, no need for absolute */
+/* Center: title + subtitle */
 .center-section {
   grid-column: 2;
-  // justify-self: center;
-  // text-align: center;
   line-height: 1.2;
-  pointer-events: none;
+  pointer-events: none; /* avoid intercepting clicks meant for right icons */
 
   .title {
     font-size: 1.2rem;
@@ -49,7 +46,7 @@
   }
 }
 
-/* Right actions (unchanged besides grid placement) */
+/* Right: actions + profile */
 .right-icons {
   grid-column: 3;
   justify-self: end;
@@ -63,7 +60,7 @@
     cursor: pointer;
 
     mat-icon {
-      font-size: 1.25rem;
+      font-size: 1.25rem; /* 20px */
       width: 1.25rem;
       height: 1.25rem;
       line-height: 1.25rem;
@@ -72,18 +69,51 @@
 
   .vertical-divider {
     border-color: var(--divider);
-    height: 1.5rem;
+    height: 1.5rem; /* 24px */
     margin-inline: var(--space-12);
+  }
+
+  /* Profile button */
+  .profile {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-8);
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: var(--text-main);
+
+    .avatar {
+      --avatar-size: 1.75rem; /* 28px */
+      width: var(--avatar-size);
+      height: var(--avatar-size);
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e8ecf5;
+    }
+
+    .avatar--initials {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem; /* 14px */
+      font-weight: 600;
+      color: #2f56a1;
+      border: var(--border-1) solid #d9deea;
+    }
+
+    .profile__chev {
+      font-size: 1rem;
+      color: var(--text-muted);
+      line-height: 1;
+    }
   }
 }
 
-/* Responsive (keep your existing rules) */
-@media (max-width: 48rem) {
-  .center-section .title { font-size: 1.375rem; }
-  .center-section .subtitle { font-size: 0.875rem; }
-}
+/* Responsive */
 
 @media (max-width: 36rem) {
-  .app-name { display: none; }  /* shrink left further on small screens */
+  .app-name { display: none; }  /* shrink brand on very small screens */
   .center-section { width: 80%; }
 }
