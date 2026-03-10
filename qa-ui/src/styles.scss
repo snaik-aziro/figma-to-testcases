@@ -202,3 +202,11 @@ body {
   outline: 0.125rem solid var(--brand-blue);
   outline-offset: 0.125rem;
 }
+
+// Remove Angular Material button border radius
+button.mat-mdc-button-base,
+button.mdc-button,
+button.mdc-button__ripple,
+button.mat-mdc-focus-indicator {
+  border-radius: 0 !important;
+}
