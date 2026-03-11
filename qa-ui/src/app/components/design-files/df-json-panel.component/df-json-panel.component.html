@@ -1,4 +1,4 @@
-<mat-card class="json-panel" role="region" aria-label="Upload JSON">
+<div class="json-panel" role="region" aria-label="Upload JSON">
   <h3 class="panel-title">Upload JSON File</h3>
 
   <div class="dropzone" role="group" aria-label="JSON upload area">
@@ -19,8 +19,7 @@
   <h3 class="panel-title mt">Select Cached JSON File</h3>
 
   <div class="cached-row">
-    <div class="name"
-         title="8fXCxeeDSsn7070b857TNW-[2022-02-01T21.25:54S5:54].json">
+    <div class="name" title="8fXCxeeDSsn7070b857TNW-[2022-02-01T21.25:54S5:54].json">
       8fXCxeeDSsn7070b857TNW-[2022-02-01T21.25:54S5:54].json
     </div>
 
@@ -31,4 +30,14 @@
     <mat-icon fontSet="material-icons-outlined">close</mat-icon>
     <span>Clear cached files</span>
   </button>
-</mat-card>
+
+  <div class="alert error" role="alert">
+    <mat-icon fontSet="material-icons-outlined">error_outline</mat-icon>
+    <div class="text">
+      <div class="title">A JSON file exceeded the 20MB size limit.</div>
+      <ul class="m-0">
+        <li>Try exporting selected figma pages only </li>
+      </ul>
+    </div>
+  </div>
+</div>
