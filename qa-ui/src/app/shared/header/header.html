@@ -3,8 +3,7 @@
 
     <!-- Left: Brand -->
     <div class="left-section">
-      <img class="app-logo" src="assets/logos/brand.svg" alt="logo" />
-      <span class="app-name">QA Test Generator</span>
+      <img class="app-logo" src="../../../assets/logo.svg" alt="logo" />
     </div>
 
     <!-- Center: Title + Subtitle -->
@@ -19,47 +18,26 @@
     <div class="right-icons d-flex align-items-center">
 
       <!-- Help -->
-      <button
-        type="button"
-        mat-icon-button
-        class="icon-btn"
-        matTooltip="Help"
-        aria-label="Help"
-        (click)="onHelp()"
-      >
+      <button type="button" mat-icon-button class="icon-btn" matTooltip="Help" aria-label="Help" (click)="onHelp()">
         <mat-icon fontSet="material-icons-outlined">help_outline</mat-icon>
       </button>
 
       <mat-divider class="vertical-divider" vertical aria-hidden="true"></mat-divider>
 
       <!-- Notifications -->
-      <button
-        type="button"
-        mat-icon-button
-        class="icon-btn"
-        matTooltip="Notifications"
-        aria-label="Notifications"
-        (click)="onNotification()"
-        [matBadge]="unreadCount ?? 0"
-        matBadgeOverlap="false"
-        matBadgeColor="primary"
-      >
+      <button type="button" mat-icon-button class="icon-btn" matTooltip="Notifications" aria-label="Notifications"
+        (click)="onNotification()" [matBadge]="unreadCount ?? 0" matBadgeOverlap="false" matBadgeColor="primary">
         <mat-icon fontSet="material-icons-outlined">notifications_none</mat-icon>
       </button>
 
       <mat-divider class="vertical-divider" vertical aria-hidden="true"></mat-divider>
 
       <!-- Profile -->
-      <button
-        type="button"
-        class="profile"
-        [matMenuTriggerFor]="profileMenu"
-        aria-label="Open profile menu"
-      >
+      <button type="button" class="profile" [matMenuTriggerFor]="profileMenu" aria-label="Open profile menu">
         @if (avatarUrl) {
-          <img class="avatar" [src]="avatarUrl" alt="Avatar" />
+        <img class="avatar" [src]="avatarUrl" alt="Avatar" />
         } @else {
-          <span class="avatar avatar--initials">{{ userInitials }}</span>
+        <span class="avatar avatar--initials">{{ userInitials }}</span>
         }
 
         <mat-icon class="profile__chev" fontSet="material-icons-outlined">expand_more</mat-icon>
@@ -71,10 +49,10 @@
           <mat-icon fontSet="material-icons-outlined">person</mat-icon>
           <span>{{ userName }}</span>
         </button>
-        <button mat-menu-item>
+        <!-- <button mat-menu-item>
           <mat-icon fontSet="material-icons-outlined">settings</mat-icon>
           <span>Settings</span>
-        </button> 
+        </button>  -->
         <mat-divider></mat-divider>
         <button mat-menu-item>
           <mat-icon fontSet="material-icons-outlined">logout</mat-icon>
