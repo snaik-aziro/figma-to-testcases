@@ -4,14 +4,14 @@ AI-powered QA Test Case Generator that creates comprehensive test cases from Fig
 
 ## Features
 
-- 🎨 **Figma Integration**: Extract UI components and screens from Figma files
-- � **Smart Caching**: Prevent API rate limits with intelligent data caching
-- 📄 **Document Parsing**: Parse requirements from PDF, DOCX, and text files
-- 🤖 **AI Test Generation**: Generate test cases using Claude AI
-- 📝 **Baseline Knowledge**: Leverage 250+ industry-standard test scenarios
-- 🎯 **Noise Reduction**: Filter decorative elements with relevance scoring
-- 🔗 **Traceability**: Link test cases to requirements
-- 📊 **Coverage Reports**: Track requirement coverage
+-  **Figma Integration**: Extract UI components and screens from Figma files
+-  **Smart Caching**: Prevent API rate limits with intelligent data caching
+-  **Document Parsing**: Parse requirements from PDF, DOCX, and text files
+-  **AI Test Generation**: Generate test cases using Claude AI
+-  **Baseline Knowledge**: Leverage 250+ industry-standard test scenarios
+-  **Noise Reduction**: Filter decorative elements with relevance scoring
+-  **Traceability**: Link test cases to requirements
+-  **Coverage Reports**: Track requirement coverage
 
 ## Key Improvements (v1.1)
 

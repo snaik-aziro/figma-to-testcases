@@ -561,9 +561,6 @@ IMPORTANT REQUIREMENTS:
                                     return test_cases_raw
                     except Exception as e4:
                         print(f"   [DEBUG] Array extraction failed: {type(e4).__name__}: {e4}")
-            else:
-                else:
-                    pass
                 
         except Exception:
             pass
