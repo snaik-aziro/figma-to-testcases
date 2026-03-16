@@ -1,0 +1,43 @@
+<div class="json-panel" role="region" aria-label="Upload JSON">
+  <h3 class="panel-title">Upload JSON File</h3>
+
+  <div class="dropzone" role="group" aria-label="JSON upload area">
+    <div class="dz-left">
+      <div class="cloud">
+        <mat-icon fontSet="material-icons-outlined">cloud_upload</mat-icon>
+      </div>
+      <div class="dz-text">
+        <div class="main">Drag and drop a JSON file here or</div>
+        <div class="sub">Upload a JSON file into the format.</div>
+      </div>
+    </div>
+
+    <!-- UI-only button -->
+    <button mat-flat-button color="primary" class="browse-btn">Browse File</button>
+  </div>
+
+  <h3 class="panel-title mt">Select Cached JSON File</h3>
+
+  <div class="cached-row">
+    <div class="name" title="8fXCxeeDSsn7070b857TNW-[2022-02-01T21.25:54S5:54].json">
+      8fXCxeeDSsn7070b857TNW-[2022-02-01T21.25:54S5:54].json
+    </div>
+
+    <button mat-flat-button class="select-btn">Select File</button>
+  </div>
+
+  <button class="link-btn clear-btn" type="button">
+    <mat-icon fontSet="material-icons-outlined">close</mat-icon>
+    <span>Clear cached files</span>
+  </button>
+
+  <div class="alert error" role="alert">
+    <mat-icon fontSet="material-icons-outlined">error_outline</mat-icon>
+    <div class="text">
+      <div class="title">A JSON file exceeded the 20MB size limit.</div>
+      <ul class="m-0">
+        <li>Try exporting selected figma pages only </li>
+      </ul>
+    </div>
+  </div>
+</div>

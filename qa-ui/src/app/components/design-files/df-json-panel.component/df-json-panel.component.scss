@@ -1,0 +1,126 @@
+.json-panel {
+  // border: var(--border-1) solid var(--color-border);
+  padding:0.625rem;
+}
+
+.panel-title {
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+  font-size: 1rem;
+}
+
+.panel-title.mt {
+  margin-top: 0.5rem;
+}
+
+.dropzone {
+  border: var(--border-1) dashed #cfd8ea;
+  background: #F5F5F9;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+
+  .dz-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .cloud mat-icon {
+    font-size: 1.125rem;
+    color: var(--brand-blue);
+  }
+
+  .dz-text .main {
+    font-size: 0.875rem;
+    color: var(--text-main);
+    // font-weight: 600;
+  }
+
+  .dz-text .sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .browse-btn {
+    height: 2rem;
+    min-width: 7rem;
+  }
+}
+
+.cached-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.5rem;
+  background: #F5F5F9;
+  padding-left: 0.5rem;
+
+  .name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--text-main);
+  }
+
+  .size {
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+  }
+
+  .select-btn {
+    height: 2rem;
+    min-width: 6.25rem;
+  }
+}
+
+.clear-btn {
+  margin-top: 0.375rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #5f6b7b;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  mat-icon {
+    font-size: 1rem;
+  }
+}
+
+/* Error banner */
+.alert.error {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.375rem;
+  background: #fdeaea;
+  border: var(--border-1) solid #f4c7c7;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  margin-top: 1rem;
+
+  .title {
+    color: #b3261e;
+    font-weight: 700;
+    margin-bottom: 0.125rem;
+    font-size: 0.875rem;
+  }
+
+  mat-icon {
+    padding-top: 0.2rem;
+    color: #b3261e;
+    font-size: 1rem;
+  }
+}
+
+
+@media (max-width: 48rem) {
+  .cached-row {
+    grid-template-columns: 1fr auto;
+  }
+}

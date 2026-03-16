@@ -1,9 +1,9 @@
 .wizard-container {
   display: grid;
   grid-template-columns: 10rem 1fr;
-  --bottom-bar-h: 1.5rem;
+  --bottom-bar-h: 2.5rem;
 
-  grid-template-rows: calc(100% - var(--bottom-bar-h)) var(--bottom-bar-h);
+  grid-template-rows: 30rem;
   grid-template-areas:
     "left main"
     "bottom bottom";
@@ -11,17 +11,18 @@
   height: calc(100vh - var(--header-height));
   max-width: 90rem;
   margin-inline: auto;
-  background: var(--color-bg);
+  background: white;
   box-sizing: border-box;
-  padding: 0.5rem 0.625rem;
+  // padding: 0.5rem 0.625rem;
 }
 
 .rail {
   grid-area: left;
   border-right: var(--border-1) solid var(--color-border);
-  padding-right: 0.625rem;
+  padding: 0.625rem 1rem;
   min-height: 0;
   overflow: auto;
+  background: var(--color-bg);
 }
 
 .v-steps {
@@ -69,7 +70,7 @@
   min-width: 0;
   min-height: 0;
   overflow: auto;
-  padding-right: 0.25rem;
+  padding: 0.625rem;
 }
 
 .bottom-bar {
@@ -78,9 +79,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--color-bg);
+  background: white;
   gap: 0.5rem;
-  padding: 0 0.25rem;
+  padding: 0 1rem;
 }
 
 .left-status {
@@ -119,7 +120,7 @@
 .actions .btn-next,
 .actions .btn-back {
   height: 2rem;
-  min-width: 4.5rem;
+  min-width: 8rem;
   border-radius: 0.375rem;
   line-height: 2rem;
   padding: 0 0.75rem;
@@ -158,8 +159,9 @@
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
   margin-bottom: 0.625rem;
-  mat-card:focus{
-      outline: none;
+
+  mat-card:focus {
+    outline: none;
   }
 }
 
@@ -167,7 +169,6 @@
   border: var(--border-1) solid var(--color-border);
   padding: 0.5rem 0.625rem;
   cursor: pointer;
-  // transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
 
   .card-head {
     display: flex;
@@ -189,7 +190,7 @@
 
   .desc {
     margin: 0.125rem 0 0;
-    // color: var(--text-muted);
+    color: var(--text-muted);
     font-size: var(--df-help-size);
   }
 
@@ -198,7 +199,6 @@
   }
 
   &.active {
-    // outline: 0.125rem solid #ffcaa6;
     background: #fffaf6;
     border-color: #ff9a4d;
     position: relative;
@@ -210,227 +210,14 @@
       background: #ff6a00;
       display: inline-block;
       box-shadow: 0 0 0 0.125rem #fff, 0 0 0 0.25rem #ffd2b3;
+      position: relative;
+      bottom: 1rem;
     }
   }
 }
 
 .mat-mdc-card {
   box-shadow: none;
-}
-
-/* =========================================================
-   FIGMA PANEL — Bootstrap inputs (compact)
-========================================================= */
-
-.figma-panel {
-  // border: var(--border-1) solid var(--color-border);
-  padding: 0.5rem 1rem;
-}
-
-.figma-panel .panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.figma-panel .panel-title {
-  margin: 0.125rem 0 0.5rem;
-  font-weight: 700;
-  color: var(--text-main);
-  font-size: var(--df-title-size);
-}
-
-.figma-panel .form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-  margin-bottom: 0.375rem;
-}
-
-.figma-panel .form-grid .full {
-  grid-column: 1 / -1;
-}
-
-.figma-panel .form-grid .half {
-  grid-column: auto;
-}
-
-.form-label {
-  font-size: var(--df-label-size);
-  color: var(--text-muted);
-  margin-bottom: 0.25rem;
-}
-
-/* Bootstrap compact fields */
-.form-control-compact,
-.form-select-compact {
-  height: 2.25rem;
-  /* 36px; switch to 2rem for 32px */
-  padding: 0.25rem 0.5rem;
-  /* tight inside */
-  font-size: var(--df-input-size);
-  line-height: 1.2;
-  border-radius: 0.5rem;
-  border: var(--border-1) solid #e2e6ef;
-}
-
-.form-select-compact {
-  padding-right: 2rem;
-}
-
-/* space for dropdown arrow */
-
-.figma-panel .options {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0.375rem 0 0.5rem;
-}
-
-.figma-panel .form-check-input {
-  width: 0.95rem;
-  height: 0.95rem;
-  margin-top: 0.15rem;
-}
-
-.figma-panel .form-check-label {
-  font-size: 0.875rem;
-}
-
-.link-btn {
-  background: transparent;
-  border: none;
-  color: #3a6ad6;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.link-btn mat-icon {
-  font-size: 1rem;
-}
-
-.figma-panel .alert.error {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.375rem;
-  background: #fdeaea;
-  border: var(--border-1) solid #f4c7c7;
-  border-radius: 0.5rem;
-  padding: 0.5rem;
-}
-
-.figma-panel .alert.error .title {
-  color: #b3261e;
-  font-weight: 700;
-  margin-bottom: 0.125rem;
-  font-size: 0.875rem;
-}
-
-.figma-panel .alert.error mat-icon {
-  padding-top: 0.2rem;
-  color: #b3261e;
-  font-size: 1rem;
-}
-
-/* =========================================================
-   JSON UPLOAD PANEL — Bootstrap inputs (compact)
-========================================================= */
-
-.json-panel {
-  border: var(--border-1) solid var(--color-border);
-  padding: 0.5rem 0.625rem;
-}
-
-.json-panel .panel-title {
-  margin: 0 0 0.5rem;
-  font-weight: 700;
-  color: var(--text-main);
-  font-size: var(--df-title-size);
-}
-
-.json-panel .panel-title.mt {
-  margin-top: 0.5rem;
-}
-
-.json-panel .dropzone {
-  border: var(--border-1) dashed #cfd8ea;
-  background: #fafbff;
-  border-radius: 0.5rem;
-  padding: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.json-panel .dz-left {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.json-panel .dz-left .cloud mat-icon {
-  font-size: 1.125rem;
-  color: var(--brand-blue);
-}
-
-.json-panel .dz-text .main {
-  font-size: 0.875rem;
-  color: var(--text-main);
-  font-weight: 600;
-}
-
-.json-panel .dz-text .sub {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.json-panel .browse-btn {
-  height: 2rem;
-  min-width: 7rem;
-}
-
-.json-panel .cached-row {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.json-panel .cached-row .name {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  color: var(--text-main);
-}
-
-.json-panel .cached-row .size {
-  color: var(--text-muted);
-  font-size: 0.8125rem;
-}
-
-.json-panel .cached-row .select-btn {
-  height: 2rem;
-  min-width: 6.25rem;
-}
-
-.clear-btn {
-  margin-top: 0.375rem;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: #5f6b7b;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.clear-btn mat-icon {
-  font-size: 1rem;
 }
 
 /* =========================================================
