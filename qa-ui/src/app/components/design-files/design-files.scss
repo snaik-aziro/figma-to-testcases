@@ -25,6 +25,7 @@
   background: var(--color-bg);
 }
 
+/* Vertical steps container */
 .v-steps {
   list-style: none;
   padding: 0.375rem 0;
@@ -34,33 +35,63 @@
   gap: 0.5rem;
 }
 
+/* Each step */
 .v-step {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
 
-  .dot {
-    width: 1rem;
-    height: 1rem;
+  /* Numbered circular badge */
+  .dot.numbered {
+    width: 1.25rem;
+    /* 20px */
+    height: 1.25rem;
+    min-width: 1.25rem;
+    min-height: 1.25rem;
     border-radius: 50%;
+    display: inline-grid;
+    place-items: center;
+
+    /* Inactive look */
+    background: #e5e7eb;
+    /* light gray */
     border: var(--border-1) solid var(--color-border);
-    background: #fff;
+    color: #374151;
+    /* dark gray number */
+    font-size: 0.75rem;
+    /* 12px */
+    font-weight: 600;
+    line-height: 1;
   }
 
   .label {
     font-size: 0.875rem;
     font-weight: 500;
+    color: var(--text-muted);
   }
 
+  /* Hover/keyboard focus ring (accessible) */
+  &:hover .dot.numbered,
+  &:focus-visible .dot.numbered {
+    outline: 0.125rem solid rgba(13, 71, 161, 0.18);
+    /* subtle blue halo */
+    outline-offset: 2px;
+  }
+
+  /* Active/current step */
   &.active {
-    .dot {
+    .dot.numbered {
       background: var(--brand-blue);
       border-color: var(--brand-blue);
+      color: #fff;
     }
 
     .label {
       color: var(--brand-blue);
+      font-weight: 600;
     }
   }
 }

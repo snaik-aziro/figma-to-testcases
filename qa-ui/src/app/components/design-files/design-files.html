@@ -3,15 +3,25 @@
   <!-- LEFT rail: vertical stepper -->
   <aside class="rail" aria-label="Steps">
     <ol class="v-steps">
-      @for (s of steps; let i = $index; track s.key) {
-      <li class="v-step" [class.active]="i === activeIndex" role="button" tabindex="0" (click)="gotoStep(i)"
-        (keydown)="($event.key === 'Enter' || $event.key === ' ') && gotoStep(i)"
-        [attr.aria-current]="i === activeIndex ? 'step' : null">
-        <span class="dot"></span>
-        <span class="label">{{ s.label }}</span>
-      </li>
-      }
-    </ol>
+  @for (s of steps; let i = $index; track s.key) {
+    <li
+      class="v-step"
+      [class.active]="i === activeIndex"
+      role="button"
+      tabindex="0"
+      (click)="gotoStep(i)"
+      (keydown)="($event.key === 'Enter' || $event.key === ' ') && gotoStep(i)"
+      [attr.aria-current]="i === activeIndex ? 'step' : null"
+      [attr.aria-label]="'Step ' + (i + 1) + ': ' + s.label"
+    >
+      <!-- Numbered circle -->
+      <span class="dot numbered">{{ i + 1 }}</span>
+
+      <!-- Step label -->
+      <span class="label">{{ s.label }}</span>
+    </li>
+  }
+</ol>
   </aside>
 
   <!-- MAIN content (in-page wizard area) -->
