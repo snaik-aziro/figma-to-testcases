@@ -1,1 +1,65 @@
-<p>prd-upload works!</p>
+<div class="prd-upload">
+
+  <!-- Page Title -->
+  <h2 class="page-title">Upload PRD File</h2>
+
+  <!-- Info banner -->
+  <div class="info-banner" role="note" aria-label="PRD upload note">
+    <div class="banner-icon">
+      <mat-icon fontSet="material-icons-outlined">description</mat-icon>
+    </div>
+    <div class="banner-text">
+      <div class="banner-title">Upload a Product Requirements Document (PRD) to generate test cases based on your product specifications.</div>
+      <!-- <div class="banner-sub">
+      </div> -->
+    </div>
+  </div>
+
+  <!-- Upload card -->
+  <div class="upload-card">
+    <h3 class="section-title">Upload PRD Document</h3>
+
+    <!-- Dropzone bar -->
+    <div class="dropzone" role="group" aria-label="PRD upload area">
+      <div class="dz-left">
+        <div class="cloud">
+          <mat-icon fontSet="material-icons-outlined">cloud_upload</mat-icon>
+        </div>
+        <div class="dz-text">
+          <div class="main">
+            Limit <strong>200MB</strong> per file
+            <span class="types">.PDF, DOCX, TXT, JSON</span>
+          </div>
+          <div class="sub">
+            Limit 200MB per file .PDF, DOCX, TXT, JSON
+          </div>
+        </div>
+      </div>
+
+      <!-- Browse (UI only) -->
+      <button mat-flat-button color="primary" class="browse-btn">
+        Browse File
+      </button>
+    </div>
+
+    <!-- File row (sample state) -->
+    <div class="file-list">
+      <div class="file-row" role="listitem" aria-label="test_baseline.json (20.4 KB)">
+        <div class="file-left">
+          <div class="file-icon">
+            <mat-icon fontSet="material-icons-outlined">insert_drive_file</mat-icon>
+          </div>
+          <div class="file-meta">
+            <div class="name" title="test_baseline.json">test_baseline.json</div>
+            <div class="size">(20.4 KB)</div>
+          </div>
+        </div>
+        <button mat-icon-button class="file-remove" aria-label="Remove file">
+          <mat-icon fontSet="material-icons-outlined">close</mat-icon>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</div>

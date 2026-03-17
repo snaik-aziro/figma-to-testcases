@@ -1,0 +1,176 @@
+/* Container ties into your wizard MAIN; uses compact density */
+.prd-upload {
+  --title-size: 1rem;         /* 16px */
+  --muted: var(--text-muted, #6b7280);
+  --border: var(--color-border, #e5e7eb);
+
+  .page-title {
+    margin: 0 0 0.75rem;
+    font-size: var(--title-size);
+    font-weight: 700;
+    color: var(--text-main, #111827);
+  }
+}
+
+/* ---------------- Info banner ---------------- */
+.info-banner {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: center;
+
+  background: #F5F5F9;
+  border: 1px solid #e0defe;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+
+  .banner-icon {
+    width: 2rem; height: 2rem;
+    border-radius: 0.375rem;
+    background: #e9e7ff;
+    display: grid; place-items: center;
+
+    mat-icon {
+      font-size: 1.25rem;
+      color: #4f46e5; /* indigo */
+    }
+  }
+
+  .banner-text {
+    .banner-title {
+      font-weight: 600;
+      color: var(--text-main, #111827);
+      margin-bottom: 0.125rem;
+    }
+    .banner-sub {
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+  }
+}
+
+/* ---------------- Upload card ---------------- */
+.upload-card {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-top: 0.75rem;
+}
+
+/* Remove default Material card shadow globally for this card */
+.mat-mdc-card {
+  box-shadow: none;
+}
+
+.section-title {
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+  color: var(--text-main, #111827);
+  font-size: 1rem;
+}
+
+/* Dropzone (single-line bar) */
+.dropzone {
+  border: 1px dashed #cfd8ea;
+  background: #F0EFF9;
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  .dz-left {
+    display: flex; align-items: center; gap: 0.75rem;
+
+    .cloud mat-icon {
+      font-size: 1.375rem;
+      color: var(--brand-blue, #2f56a1);
+    }
+
+    .dz-text {
+      .main {
+        font-size: 0.9rem;
+        color: var(--text-main, #111827);
+        font-weight: 600;
+
+        .types { color: #374151; }
+      }
+      .sub {
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+    }
+  }
+
+  .browse-btn {
+    min-width: 8rem;
+    height: 2rem;
+    line-height: 2rem;
+    border-radius: 0.375rem;
+  }
+}
+
+/* ---------------- File list ---------------- */
+.file-list {
+  margin-top: 0.75rem;
+}
+
+.file-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: #ffffff;
+
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.75rem;
+
+  .file-left {
+    display: flex; align-items: center; gap: 0.5rem;
+
+    .file-icon {
+      width: 1.75rem; height: 1.75rem;
+      border-radius: 0.375rem;
+      background: #f3f4f6;
+      display: grid; place-items: center;
+
+      mat-icon { font-size: 1.1rem; color: #6b7280; }
+    }
+
+    .file-meta {
+      display: flex; align-items: baseline; gap: 0.375rem;
+      min-width: 0;
+
+      .name {
+        color: var(--text-main, #111827);
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .size {
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+    }
+  }
+
+  .file-remove {
+    width: 2rem; height: 2rem;
+    mat-icon { font-size: 1rem; color: #6b7280; }
+  }
+}
+
+/* -------------- Responsive -------------- */
+@media (max-width: 48rem) {
+  .dropzone {
+    align-items: flex-start;
+    .browse-btn { min-width: 7rem; }
+  }
+}
