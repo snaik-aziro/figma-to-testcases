@@ -14,7 +14,8 @@ settings = get_settings()
 class FigmaClient:
     """Client for interacting with the Figma API."""
 
-    def __init__(self, access_token: Optional[str] = None, enable_filtering: bool = True, prd_signals: Optional[Dict[str, Any]] = None):
+    def __init__(self, access_token: Optional[str] = None, enable_filtering: bool = True,
+                 prd_signals: Optional[Dict[str, Any]] = None):
         self.access_token = access_token or settings.figma_access_token
         self.base_url = settings.figma_api_base_url
         self.headers = {"X-Figma-Token": self.access_token}
@@ -170,19 +171,9 @@ class FigmaClient:
             "width": bounds.get("width", 0),
             "height": bounds.get("height", 0),
         }
-    
+
     def _calculate_component_relevance(self, component: ComponentData) -> float:
-        """Composite priority score (0-100) — combines type heuristics, text, interactions,
-        area and visibility. This is the recommended priority metric used by percentile
-        filtering and UI preview.
 
-        Args:
-            component: component dict or object
-        Returns:
-            normalized score between 0 and 100
-        """
-
-        # Helpers
         def get_attr(obj, key, default=None):
             if isinstance(obj, dict):
                 return obj.get(key, default)
@@ -204,98 +195,127 @@ class FigmaClient:
                 return 0.0
 
         component_type = get_attr(component, 'component_type', 'unknown').lower()
-        text = get_prop(component, 'text', '') or ''
+        text = (get_prop(component, 'text', '') or '').strip().lower()
+        name = (get_attr(component, 'name', '') or '').lower()
 
-        # Base type mapping (same as before but used as base)
+        # ❌ HARD REMOVE — USELESS NAMES (MAIN FIX)
+
+        if name.startswith("rectangle"):
+            return 0
+
+        if "arrow" in name:
+            return 0
+
+        if "icon" in name:
+            return 0
+
+        if "vector" in name:
+            return 0
+
+        # ❌ REMOVE BODY / IMAGE / INSTRUCTION CONTENT
+
+        if text in ["fully body", "full body"]:
+            return 0
+
+        if any(x in text for x in ["left arm", "keep your"]):
+            return 0
+
+        # ❌ REMOVE DUPLICATE-LIKE TEXT (dates etc)
+
+        if any(x in text for x in ["08/", "2021", "2022"]):
+            return 0
+
+        # ❌ HARD FILTER — REMOVE USELESS TYPES IMMEDIATELY
+        REMOVE_TYPES = [
+            'rectangle', 'ellipse', 'circle', 'line', 'vector',
+            'polygon', 'shape', 'divider', 'spacer', 'separator',
+            'background', 'overlay', 'icon'
+        ]
+        if component_type in REMOVE_TYPES:
+            return 0
+
+        # ❌ REMOVE USELESS TEXT
+        if text:
+            if text.isdigit():
+                return 0
+            if len(text) < 3:
+                return 0
+            if "copyright" in text:
+                return 0
+            if any(x in text for x in ["08/", "2021", "2022"]):
+                return 0
+
+        # ❌ REMOVE GROUPS WITHOUT VALUE
+        if component_type in ['group', 'container', 'frame']:
+            if not text:
+                return 0
+            if text.lower().startswith("rectangle"):
+                return 0
+
+        # ✅ BASE SCORE
         type_score_map = {
-            # critical
-            'button': 90, 'input': 85, 'textarea': 85, 'dropdown': 80, 'select': 80,
-            'checkbox': 75, 'radio': 75, 'toggle': 75, 'switch': 75, 'slider': 70,
-            # important
-            'modal': 65, 'dialog': 65, 'form': 60, 'table': 60, 'list': 55,
-            'navigation': 55, 'card': 50, 'container': 40, 'frame': 35, 'group': 30,
-            # content
-            'text': 20, 'label': 20, 'heading': 25, 'paragraph': 20, 'image': 25,
-            'icon': 15, 'link': 40,
-            # decorative
-            'rectangle': 0, 'ellipse': 0, 'circle': 0, 'line': 0, 'shape': 0,
-            'polygon': 0, 'vector': 5, 'divider': 5, 'spacer': 0, 'separator': 5,
-            'background': 0, 'overlay': 0
+            'button': 90, 'input': 85, 'textarea': 85,
+            'dropdown': 80, 'select': 80,
+            'checkbox': 75, 'radio': 75,
+            'form': 70, 'table': 65, 'list': 60,
+            'navigation': 60, 'card': 55,
+            'text': 40, 'label': 40, 'heading': 45,
+            'link': 50
         }
 
-        base = type_score_map.get(component_type, 15)
+        base = type_score_map.get(component_type, 20)
 
-        # Text boost
-        text_boost = 0
-        if text and len(text.strip()) > 0:
-            tl = len(text.strip())
-            if tl > 5:
-                text_boost = min(20, tl // 3)
-            if any(x in text.lower() for x in ['icon', 'btn', '<', '>', '[', ']']):
-                text_boost -= 5
+        # ✅ IMPORTANT KEYWORD BOOST (MAIN FIX)
+        IMPORTANT_KEYWORDS = [
+            "login", "sign", "submit", "search", "filter",
+            "username", "password", "email",
+            "dashboard", "user", "patient",
+            "add", "edit", "delete", "manage"
+        ]
 
-        # Interaction boost (use interaction_count if available)
+        keyword_boost = 0
+        for kw in IMPORTANT_KEYWORDS:
+            if kw in text or kw in name:
+                keyword_boost += 25
+
+        # ❌ REMOVE REPEATED / INSTRUCTION TEXT
+        if text:
+            if text.count(" ") > 6:
+                return 0
+            if any(x in text for x in ["keep your", "left arm"]):
+                return 0
+
+        # Interaction
         interaction_count = get_prop(component, 'interaction_count', 0) or 0
-        interaction_boost = min(30, int(interaction_count) * 8) if interaction_count else (25 if get_prop(component, 'has_interactions', False) else 0)
+        interaction_boost = min(30, int(interaction_count) * 8) if interaction_count else 0
 
-        # Visibility / opacity penalties
+        # Visibility
         visible = get_prop(component, 'visible', True)
         opacity = get_prop(component, 'opacity', 1.0)
-        visibility_penalty = 0
+
         if not visible:
-            visibility_penalty -= 70
+            return 0
         if opacity is not None and opacity < 0.3:
-            visibility_penalty -= 15
+            return 0
 
-        # Area penalty: very small elements (icons, pixels) get penalized
+        # Area filter (remove tiny icons)
         area = area_of(component)
-        area_penalty = 0
-        if area > 0:
-            # Choose thresholds empirically: elements < 400 px^2 are likely small icons
-            if area < 400:
-                area_penalty -= 15
-            elif area < 1600:
-                area_penalty -= 5
+        if area and area < 300:
+            return 0
 
-        # Compose final raw score
-        raw = base + text_boost + interaction_boost + visibility_penalty + area_penalty
+        # FINAL SCORE
+        raw = base + keyword_boost + interaction_boost
 
-        # PRD-derived boost: if PRD signals are present, match keywords against
-        # component type, name and text. `self.prd_signals` expected to contain
-        # normalized keyword weights in 0..1 range.
-        prd_boost = 0.0
-        try:
-            kws = self.prd_signals.get('keywords', {}) if isinstance(self.prd_signals, dict) else {}
-            if kws:
-                comp_name = get_attr(component, 'name', '') or ''
-                comp_name = comp_name.lower()
-                comp_text = text.lower() if isinstance(text, str) else ''
-                comp_type = component_type.lower() if isinstance(component_type, str) else ''
-                score_sum = 0.0
-                for kw, w in kws.items():
-                    kw_l = kw.lower()
-                    if kw_l and (kw_l in comp_name or kw_l in comp_text or kw_l in comp_type):
-                        try:
-                            score_sum += float(w)
-                        except Exception:
-                            continue
-                # Scale summed normalized weights to a boost (max ~25)
-                prd_boost = min(25.0, score_sum * 25.0)
-        except Exception:
-            prd_boost = 0.0
-
-        raw += prd_boost
-
-        # Normalize to 0-100
-        score = max(0.0, min(100.0, float(raw)))
-        return score
+        return max(0.0, min(100.0, float(raw)))
 
     # New API: percentile-based filtering
-    def filter_components_percentile(self, components: List[ComponentData], drop_percent: float = 10.0) -> Dict[str, Any]:
+    def filter_components_percentile(self, components: List[ComponentData], drop_percent: float = 10.0) -> Dict[
+        str, Any]:
         """Filter components by dropping the bottom `drop_percent` percentile.
 
         Returns a dict with `components` (filtered list) and `stats` for UI preview.
         """
+
         # Flatten components to compute global scores
         def flatten(comps: List[ComponentData], out: List[ComponentData]):
             for c in comps:
@@ -316,7 +336,7 @@ class FigmaClient:
             scores.append(s)
 
         if not scores:
-            return { 'components': components, 'stats': { 'dropped': 0, 'total': 0 } }
+            return {'components': components, 'stats': {'dropped': 0, 'total': 0}}
 
         # Determine cutoff
         scores_sorted = sorted(scores)
@@ -353,70 +373,66 @@ class FigmaClient:
             'dropped_estimate': dropped
         }
 
-        return { 'components': filtered, 'stats': stats }
-    
+        return {'components': filtered, 'stats': stats}
+
     def _filter_components_by_relevance(self, components: List[ComponentData]) -> List[ComponentData]:
-        """Filter out low-relevance components to reduce noise.
-        
-        Args:
-            components: List of components to filter (ComponentData objects or dicts)
-            
-        Returns:
-            Filtered list of relevant components
-        """
+        """Filter out low-relevance components to reduce noise and ensure count only decreases."""
+
         if not self.enable_filtering:
             return components
-        
+
         filtered = []
-        scores_dist = {'high': 0, 'medium': 0, 'low': 0, 'filtered': 0}
+
+        TEST_RELEVANT_TYPES = {"button", "input", "dropdown", "checkbox", "radio", "form", "modal"}
+        IMPORTANT_KEYWORDS = ["login", "signin", "submit", "email", "password"]
+
+        before_count = len(components)
 
         for component in components:
-            # Compute and normalize score to 0-100
+            # Score
             raw_score = self._calculate_component_relevance(component)
             score = max(0, min(100, raw_score))
 
-            # Attach score for UI/debug
+            # Attach score
             if isinstance(component, dict):
                 component['relevance_score'] = score
+                children = component.get('children', [])
+                component_type = component.get("component_type", "")
+                name = component.get("name", "").lower()
+                if name.startswith("rectangle"):
+                    continue
             else:
                 component.relevance_score = score
+                children = getattr(component, 'children', [])
+                component_type = getattr(component, "component_type", "")
+                name = getattr(component, "name", "").lower()
 
-            # Track score distribution
-            if score >= 70:
-                scores_dist['high'] += 1
-            elif score >= 40:
-                scores_dist['medium'] += 1
-            elif score >= self.relevance_threshold:
-                scores_dist['low'] += 1
-            else:
-                scores_dist['filtered'] += 1
-            # Always recurse into children to avoid dropping important children under decorative parents
-            children = component.get('children', []) if isinstance(component, dict) else getattr(component, 'children', [])
-            filtered_children = []
-            if children:
-                filtered_children = self._filter_components_by_relevance(children)
+            # Recursive filtering of children
+            filtered_children = self._filter_components_by_relevance(children) if children else []
 
-            # If component meets threshold, include it and attach filtered children
-            if score >= self.relevance_threshold:
+            is_test_type = component_type in TEST_RELEVANT_TYPES
+            has_keyword = any(k in name for k in IMPORTANT_KEYWORDS)
+
+            # ✅ KEEP only valid components
+            if score >= self.relevance_threshold or is_test_type or has_keyword:
                 if isinstance(component, dict):
                     component['children'] = filtered_children
                 else:
                     component.children = filtered_children
-                filtered.append(component)
-            else:
-                if filtered_children:
-                    # If parent is dict, extend with dict children; else extend with objects
-                    for child in filtered_children:
-                        filtered.append(child)
 
-        print(f"[FILTERING DEBUG] Score distribution: High={scores_dist['high']}, Medium={scores_dist['medium']}, Low={scores_dist['low']}, Filtered={scores_dist['filtered']}")
-        print(f"[FILTERING DEBUG] Threshold: {self.relevance_threshold}")
-        print(f"[FILTERING DEBUG] Returned components: {len(filtered)} (out of {len(components)})")
-        
+                filtered.append(component)
+
+            # ❌ DO NOT push children if parent is removed (THIS FIXES YOUR ISSUE)
+
+        # after_count = len(filtered)
+        # removed = before_count - after_count
+
+        # print(f"[FILTER SUMMARY] Before: {before_count} | After: {after_count} | Removed: {removed}")
+
         return filtered
 
     def _parse_node_tree(
-        self, node: Dict[str, Any], depth: int = 0, max_depth: int = 10
+            self, node: Dict[str, Any], depth: int = 0, max_depth: int = 10
     ) -> Optional[ComponentData]:
         """Recursively parse Figma node tree into ComponentData."""
         if depth > max_depth:
@@ -466,7 +482,7 @@ class FigmaClient:
 
             # Check for screen-like names
             screen_keywords = [
-                "screen", "page", "view", "mobile", "desktop", 
+                "screen", "page", "view", "mobile", "desktop",
                 "tablet", "home", "login", "dashboard", "profile"
             ]
             if any(kw in name for kw in screen_keywords):
@@ -542,11 +558,11 @@ class FigmaClient:
                     )
                     # Flatten component tree for the screen
                     screen.components = root_component.children if root_component else []
-                    
+
                     # Apply noise reduction filtering
                     if self.enable_filtering:
                         screen.components = self._filter_components_by_relevance(screen.components)
-                    
+
                     screens.append(screen)
 
             # Continue searching in children
