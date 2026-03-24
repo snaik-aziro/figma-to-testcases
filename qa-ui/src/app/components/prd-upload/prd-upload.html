@@ -1,65 +1,127 @@
-<div class="prd-upload">
+<div class="prd-wrapper">
 
-  <!-- Page Title -->
+  <!-- Page title -->
   <h2 class="page-title">Upload PRD File</h2>
 
-  <!-- Info banner -->
-  <div class="info-banner" role="note" aria-label="PRD upload note">
-    <div class="banner-icon">
+  <!-- Info Banner -->
+  <div class="info-banner">
+    <div class="icon-wrap">
       <mat-icon fontSet="material-icons-outlined">description</mat-icon>
     </div>
+
     <div class="banner-text">
-      <div class="banner-title">Upload a Product Requirements Document (PRD) to generate test cases based on your product specifications.</div>
-      <!-- <div class="banner-sub">
-      </div> -->
+      <!-- <div class="title">Upload a Product Requirements Document (PRD)</div> -->
+      <div class="sub">Upload a Product Requirements Document (PRD) to generate test cases based on your product specifications.</div>
     </div>
   </div>
 
-  <!-- Upload card -->
-  <div class="upload-card">
+  <!-- Upload PRD Document Section -->
+  <mat-card class="upload-card">
+
     <h3 class="section-title">Upload PRD Document</h3>
 
-    <!-- Dropzone bar -->
-    <div class="dropzone" role="group" aria-label="PRD upload area">
-      <div class="dz-left">
-        <div class="cloud">
-          <mat-icon fontSet="material-icons-outlined">cloud_upload</mat-icon>
-        </div>
-        <div class="dz-text">
-          <div class="main">
-            Limit <strong>200MB</strong> per file
-            <span class="types">.PDF, DOCX, TXT, JSON</span>
+    <!-- Upload Bar -->
+    <div class="upload-bar">
+      <div class="left">
+        <mat-icon class="cloud" fontSet="material-icons-outlined">cloud_upload</mat-icon>
+
+        <div>
+          <div class="line1">
+            Limit 200MB per file
+            <strong>.PDF, DOCX, TXT, JSON</strong>
           </div>
-          <div class="sub">
-            Limit 200MB per file .PDF, DOCX, TXT, JSON
-          </div>
+          <div class="line2">Limit 200MB per file .PDF, DOCX, TXT, JSON</div>
         </div>
       </div>
 
-      <!-- Browse (UI only) -->
-      <button mat-flat-button color="primary" class="browse-btn">
-        Browse File
-      </button>
+      <button mat-flat-button color="primary" class="browse-btn">Browse File</button>
     </div>
 
-    <!-- File row (sample state) -->
-    <div class="file-list">
-      <div class="file-row" role="listitem" aria-label="test_baseline.json (20.4 KB)">
-        <div class="file-left">
-          <div class="file-icon">
-            <mat-icon fontSet="material-icons-outlined">insert_drive_file</mat-icon>
-          </div>
-          <div class="file-meta">
-            <div class="name" title="test_baseline.json">test_baseline.json</div>
-            <div class="size">(20.4 KB)</div>
-          </div>
+    <!-- BELOW: Summary + Insights grid -->
+    <div class="details-grid">
+
+      <!-- ✅ PRD Summary -->
+      <mat-card class="summary-card">
+
+        <div class="summary-title">
+          <mat-icon fontSet="material-icons-outlined" class="green">check_circle</mat-icon>
+          <span>PRD Summary</span>
         </div>
-        <button mat-icon-button class="file-remove" aria-label="Remove file">
-          <mat-icon fontSet="material-icons-outlined">close</mat-icon>
-        </button>
-      </div>
+
+        <div class="summary-text">
+          <div><strong>File:</strong> onboarding_prd_v2.docx</div>
+          <div><strong>Size:</strong> 1.8 MB</div>
+          <div><strong>Pages:</strong> 24</div>
+          <div><strong>Sections Detected:</strong> 12</div>
+          <div><strong>Last Modified:</strong> April 14, 2024</div>
+        </div>
+
+        <div class="success-box">
+          <mat-icon fontSet="material-icons-outlined" class="green">check_circle</mat-icon>
+          PRD uploaded and parsed successfully.
+        </div>
+
+      </mat-card>
+
+      <!-- ✅ AI Generated Insight -->
+      <mat-card class="insight-card">
+
+        <div class="insight-title-row">
+          <span>AI Generated Insight</span>
+
+          <select class="form-select prd-select">
+            <option>PRD</option>
+            <option>Alternate File</option>
+          </select>
+        </div>
+
+        <div class="options">
+
+          <label class="option-row">
+            <input type="radio" name="ai" />
+            <span>Test Case Generation More</span>
+          </label>
+
+          <label class="option-row">
+            <input type="radio" name="ai" />
+            <span>Functional Only</span>
+          </label>
+
+          <label class="option-row">
+            <input type="radio" name="ai" />
+            <span>Functional + Edge Case</span>
+          </label>
+
+          <label class="option-row">
+            <input type="radio" name="ai" />
+            <span>Include Negative Testing</span>
+          </label>
+
+          <label class="option-row">
+            <input type="radio" name="ai" checked />
+            <span>Full Coverage (Recommended)</span>
+          </label>
+
+          <label class="option-row">
+            <input type="checkbox" />
+            <span>Compare with previous version</span>
+          </label>
+
+        </div>
+
+      </mat-card>
+
     </div>
 
-  </div>
+    <!-- ✅ PRD VERSION SELECT -->
+    <div class="prd-version">
+      <label class="prd-version-label">PRD Version</label>
+      <select class="form-select prd-version-box">
+        <option>v2.0</option>
+        <option>v1.5</option>
+        <option>v1.0</option>
+      </select>
+    </div>
+  </mat-card>
 
 </div>

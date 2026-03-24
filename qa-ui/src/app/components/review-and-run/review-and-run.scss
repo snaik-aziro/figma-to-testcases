@@ -1,0 +1,152 @@
+.review-wrapper {
+  padding: 0.5rem 0;
+
+  .preview-title {
+    margin: 1.25rem 0 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-main);
+  }
+}
+
+/* ---------------- STATUS CARD ---------------- */
+.status-card {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e3e3e3;
+  text-align: center;
+}
+
+.status-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.status-sub {
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+/* Progress Steps */
+.progress-steps {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+
+    &.done {
+      color: #0d47a1;
+    }
+
+    &.active {
+      color: #ff6a00;
+    }
+
+    &.pending {
+      color: #7a7a7a;
+    }
+
+    mat-icon {
+      font-size: 1.25rem;
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+
+  .divider {
+    width: 2rem;
+    height: 2px;
+    background: #dcdcdc;
+  }
+}
+
+/* Progress bar */
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: #ddd;
+  border-radius: 2rem;
+  margin-top: 0.25rem;
+
+  .bar-fill {
+    height: 100%;
+    width: 40%; /* During PRD parsing */
+    background: #ff6a00;
+    border-radius: 2rem;
+  }
+}
+
+/* ---------------- TEST LIST ---------------- */
+
+.test-accordion {
+  .mat-expansion-panel-header {
+    font-size: 1rem;
+
+    mat-panel-description {
+      color: var(--text-muted);
+    }
+  }
+}
+
+.test-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid #e3e3e3;
+
+  .test-title-row {
+    display: grid;
+    grid-template-columns: 4rem 1fr auto;
+    align-items: center;
+    gap: 1rem;
+
+    .test-id {
+      font-weight: 700;
+      color: #4a4a4a;
+    }
+
+    .test-name {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .priority {
+      text-align: right;
+      font-size: 0.875rem;
+
+      .p-high {
+        color: #e53935;
+        font-weight: 600;
+      }
+
+      .p-medium {
+        color: #fb8c00;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .requirements {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+
+    .req-id {
+      color: #0d47a1;
+      font-weight: 600;
+    }
+
+    .req-item {
+      margin-left: 0.25rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+  }
+}
