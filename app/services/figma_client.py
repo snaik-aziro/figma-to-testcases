@@ -14,8 +14,7 @@ settings = get_settings()
 class FigmaClient:
     """Client for interacting with the Figma API."""
 
-    def __init__(self, access_token: Optional[str] = None, enable_filtering: bool = True,
-                 prd_signals: Optional[Dict[str, Any]] = None):
+    def __init__(self, access_token: Optional[str] = None, enable_filtering: bool = True, prd_signals: Optional[Dict[str, Any]] = None):
         self.access_token = access_token or settings.figma_access_token
         self.base_url = settings.figma_api_base_url
         self.headers = {"X-Figma-Token": self.access_token}
@@ -198,8 +197,6 @@ class FigmaClient:
         text = (get_prop(component, 'text', '') or '').strip().lower()
         name = (get_attr(component, 'name', '') or '').lower()
 
-        # ❌ HARD REMOVE — USELESS NAMES (MAIN FIX)
-
         if name.startswith("rectangle"):
             return 0
 
@@ -212,7 +209,6 @@ class FigmaClient:
         if "vector" in name:
             return 0
 
-        # ❌ REMOVE BODY / IMAGE / INSTRUCTION CONTENT
 
         if text in ["fully body", "full body"]:
             return 0
@@ -220,12 +216,9 @@ class FigmaClient:
         if any(x in text for x in ["left arm", "keep your"]):
             return 0
 
-        # ❌ REMOVE DUPLICATE-LIKE TEXT (dates etc)
-
         if any(x in text for x in ["08/", "2021", "2022"]):
             return 0
 
-        # ❌ HARD FILTER — REMOVE USELESS TYPES IMMEDIATELY
         REMOVE_TYPES = [
             'rectangle', 'ellipse', 'circle', 'line', 'vector',
             'polygon', 'shape', 'divider', 'spacer', 'separator',
@@ -234,7 +227,6 @@ class FigmaClient:
         if component_type in REMOVE_TYPES:
             return 0
 
-        # ❌ REMOVE USELESS TEXT
         if text:
             if text.isdigit():
                 return 0
@@ -245,14 +237,14 @@ class FigmaClient:
             if any(x in text for x in ["08/", "2021", "2022"]):
                 return 0
 
-        # ❌ REMOVE GROUPS WITHOUT VALUE
+
         if component_type in ['group', 'container', 'frame']:
             if not text:
                 return 0
             if text.lower().startswith("rectangle"):
                 return 0
 
-        # ✅ BASE SCORE
+        # BASE SCORE
         type_score_map = {
             'button': 90, 'input': 85, 'textarea': 85,
             'dropdown': 80, 'select': 80,
@@ -265,7 +257,7 @@ class FigmaClient:
 
         base = type_score_map.get(component_type, 20)
 
-        # ✅ IMPORTANT KEYWORD BOOST (MAIN FIX)
+
         IMPORTANT_KEYWORDS = [
             "login", "sign", "submit", "search", "filter",
             "username", "password", "email",
@@ -278,18 +270,18 @@ class FigmaClient:
             if kw in text or kw in name:
                 keyword_boost += 25
 
-        # ❌ REMOVE REPEATED / INSTRUCTION TEXT
+
         if text:
             if text.count(" ") > 6:
                 return 0
             if any(x in text for x in ["keep your", "left arm"]):
                 return 0
 
-        # Interaction
+
         interaction_count = get_prop(component, 'interaction_count', 0) or 0
         interaction_boost = min(30, int(interaction_count) * 8) if interaction_count else 0
 
-        # Visibility
+
         visible = get_prop(component, 'visible', True)
         opacity = get_prop(component, 'opacity', 1.0)
 
@@ -298,24 +290,22 @@ class FigmaClient:
         if opacity is not None and opacity < 0.3:
             return 0
 
-        # Area filter (remove tiny icons)
+
         area = area_of(component)
         if area and area < 300:
             return 0
 
-        # FINAL SCORE
+
         raw = base + keyword_boost + interaction_boost
 
         return max(0.0, min(100.0, float(raw)))
 
-    # New API: percentile-based filtering
-    def filter_components_percentile(self, components: List[ComponentData], drop_percent: float = 10.0) -> Dict[
-        str, Any]:
+
+    def filter_components_percentile(self, components: List[ComponentData], drop_percent: float = 10.0) -> Dict[str, Any]:
         """Filter components by dropping the bottom `drop_percent` percentile.
 
         Returns a dict with `components` (filtered list) and `stats` for UI preview.
         """
-
         # Flatten components to compute global scores
         def flatten(comps: List[ComponentData], out: List[ComponentData]):
             for c in comps:
@@ -336,7 +326,7 @@ class FigmaClient:
             scores.append(s)
 
         if not scores:
-            return {'components': components, 'stats': {'dropped': 0, 'total': 0}}
+            return { 'components': components, 'stats': { 'dropped': 0, 'total': 0 } }
 
         # Determine cutoff
         scores_sorted = sorted(scores)
@@ -373,7 +363,7 @@ class FigmaClient:
             'dropped_estimate': dropped
         }
 
-        return {'components': filtered, 'stats': stats}
+        return { 'components': filtered, 'stats': stats }
 
     def _filter_components_by_relevance(self, components: List[ComponentData]) -> List[ComponentData]:
         """Filter out low-relevance components to reduce noise and ensure count only decreases."""
@@ -413,7 +403,7 @@ class FigmaClient:
             is_test_type = component_type in TEST_RELEVANT_TYPES
             has_keyword = any(k in name for k in IMPORTANT_KEYWORDS)
 
-            # ✅ KEEP only valid components
+
             if score >= self.relevance_threshold or is_test_type or has_keyword:
                 if isinstance(component, dict):
                     component['children'] = filtered_children
@@ -422,17 +412,10 @@ class FigmaClient:
 
                 filtered.append(component)
 
-            # ❌ DO NOT push children if parent is removed (THIS FIXES YOUR ISSUE)
-
-        # after_count = len(filtered)
-        # removed = before_count - after_count
-
-        # print(f"[FILTER SUMMARY] Before: {before_count} | After: {after_count} | Removed: {removed}")
-
         return filtered
 
     def _parse_node_tree(
-            self, node: Dict[str, Any], depth: int = 0, max_depth: int = 10
+        self, node: Dict[str, Any], depth: int = 0, max_depth: int = 10
     ) -> Optional[ComponentData]:
         """Recursively parse Figma node tree into ComponentData."""
         if depth > max_depth:
