@@ -40,6 +40,44 @@ Response:
 }
 ```
 
+## Supported Backend Endpoints (current server)
+
+The UI should call the backend endpoints below — these are the endpoints currently implemented in `server.py`.
+
+- POST `/api/figma/fetch-cache` — Fetch a Figma file and cache the extracted screens
+  - Request body: `{ "fileUrlOrId": "<file_url_or_id>", "token": "<optional_figma_token>" }`
+  - Response: `{ "cacheId": "<file_id>", "fileId": "<file_id>", "screensCount": 12 }`
+
+- GET `/api/figma/cache` — List cached files (metadata)
+  - Response: `[{ "file_id": "<file_id>", "file_name": "...", "cached_at": "..." }, ...]`
+
+- GET `/api/figma/cache/{cacheId}` — Retrieve cached JSON for a file
+  - Response: `{ "cacheId": "<file_id>", "data": { "screens": [ ... ] } }`
+
+- DELETE `/api/figma/cache/{cacheId}` — Delete a cached file
+  - Response: `{ "cacheId": "<file_id>", "status": "deleted" }`
+
+- POST `/api/tests/generate` — Generate tests from a cached screen
+  - Request body: `{ "cacheId": "<file_id>", "screenId": "<figma_node_id>", "testType": "functional", "testCount": 5 }`
+  - Response: `{ "runId": "run_...", "testCount": 5, "tests": [ ... ] }`
+
+- GET `/api/tests/runs` — List generated test run IDs
+  - Response: `{ "runs": ["run_20260317T...", ...] }`
+
+- GET `/api/tests/runs/{runId}` — Retrieve a saved run snapshot (generated tests)
+  - Response: `{ "run_id": "...", "cache_id": "...", "screen_id": "...", "tests": [ ... ] }`
+
+- GET `/api/tests/runs/{runId}/download` — Download run JSON
+  - Response: JSON content (application/json)
+
+- POST `/api/tests/evaluate` — Evaluate tests using the Evaluator (existing endpoint)
+  - Request body: `{ "prd": {...}, "tests": {...}, "screen": {...}, "prefer_premium": false }`
+  - Response: evaluator result object
+
+Notes:
+- These endpoints currently run synchronously: `/api/figma/fetch-cache` returns the cacheId after fetching; there is no background job/status endpoint implemented. If you need polling/progress, we can add a job/status flow.
+- For security, prefer server-side `FIGMA_ACCESS_TOKEN` usage; the endpoint accepts an optional token but sending tokens from the client is not recommended.
+
 ## How to run locally
 
 1. Install Node 20+ and npm/yarn

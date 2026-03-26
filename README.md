@@ -101,6 +101,24 @@ The Streamlit interface guides you through the process:
     *   Select a specific screen from the dropdown menu to view its components.
     *   Click **"Generate Test Cases"**. The AI will generate functional, visual, and accessibility tests based on the screen's components and the PRD context.
 
+Manual Feedback & Re-evaluation
+--------------------------------
+
+After generating test cases you can provide targeted human feedback and re-run a single regeneration and evaluation pass. This is a manual, one-shot loop (not automatic iteration):
+
+- In the Streamlit UI (Sidebar → selected screen), use the **Manual Feedback & Re-evaluation** panel.
+- Enter concise guidance in the feedback text box describing what to focus on (e.g. "Prioritize form validation and negative scenarios for the Submit button", or "Make expected results explicit and include test data samples").
+- Choose how many tests to generate and click **Re-generate & Evaluate**. The app will append your feedback to the PRD context, re-generate test cases once, and run a local or server-side evaluation.
+- Review the updated test cases and the evaluation metrics shown in the UI. You can download the regenerated test cases or the run JSON for traceability.
+
+Developer Notes
+---------------
+
+- The manual feedback flow augments the PRD context with the user-provided instructions and calls `TestGenerator.generate_test_cases()` once.
+- Evaluation is performed via `app.services.evaluator.Evaluator` (server endpoint attempted first, then local fallback).
+- Persistent snapshots and structured run metadata are stored by `app.services.feedback_manager` (app/data/feedback_runs).
+- If you want automated multi-iteration tuning (generate → evaluate → auto-regenerate until a threshold is met), see `TestGenerator.generate_until_accuracy()` in `app/services/test_generator.py` — the UI exposes a manual, human-in-the-loop interface by default to give users precise control over what feedback to apply.
+
 4.  **Review and Export**:
     *   The generated test cases will appear on the right.
     *   Review the test cases, and once satisfied, click **"Export as JSON"** to download them.

@@ -9,6 +9,8 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from app.config import get_settings
 from app.schemas import ScreenData, TestStep
 from app.models.database import TestCaseType, TestCasePriority
+from app.services.evaluator import Evaluator
+from app.services.feedback_manager import save_run_snapshot, new_run_id
 
 settings = get_settings()
 
@@ -589,6 +591,137 @@ IMPORTANT REQUIREMENTS:
             all_tests[test_type.value] = tests
 
         return all_tests
+
+    def compute_accuracy_from_metrics(self, metrics: Dict[str, float]) -> float:
+        """Compute a composite accuracy value (0.0-1.0) from evaluator metrics.
+
+        Weights chosen to prioritize correctness and coverage.
+        """
+        # Default metric values
+        coverage = float(metrics.get("coverage", 0.0))
+        relevance = float(metrics.get("relevance", 0.0))
+        correctness = float(metrics.get("correctness", 0.0))
+        completeness = float(metrics.get("completeness", 0.0))
+        redundancy = float(metrics.get("redundancy", 0.0))
+        clarity = float(metrics.get("clarity", 0.0))
+
+        # Weigh metrics (sum should be 1.0)
+        weights = {
+            "correctness": 0.35,
+            "coverage": 0.30,
+            "completeness": 0.15,
+            "relevance": 0.10,
+            "clarity": 0.05,
+            "redundancy": 0.05,
+        }
+
+        # redundancy is a penalty, convert to a positive contribution by (1 - redundancy)
+        redundancy_score = max(0.0, 1.0 - redundancy)
+
+        score = (
+            correctness * weights["correctness"]
+            + coverage * weights["coverage"]
+            + completeness * weights["completeness"]
+            + relevance * weights["relevance"]
+            + clarity * weights["clarity"]
+            + redundancy_score * weights["redundancy"]
+        )
+
+        return min(max(score, 0.0), 1.0)
+
+    def generate_until_accuracy(
+        self,
+        screen,
+        requirements: Optional[List[Dict[str, Any]]] = None,
+        prd_context: Optional[str] = None,
+        test_type: TestCaseType = TestCaseType.FUNCTIONAL,
+        test_count: int = 5,
+        threshold: float = 0.95,
+        max_iterations: int = 5,
+        prefer_premium: bool = True,
+    ) -> Dict[str, Any]:
+        """Iteratively generate and evaluate test cases until composite accuracy >= threshold.
+
+        Returns a run summary containing iterations, final tests and final evaluation.
+        """
+        run_id = new_run_id(prefix="feedback")
+        evaluator = Evaluator.with_fallback() if not prefer_premium else Evaluator()
+
+        history = []
+        current_prd_context = prd_context or ""
+
+        for it in range(1, max_iterations + 1):
+            # Generate
+            tests = self.generate_test_cases(
+                screen=screen,
+                test_type=test_type,
+                requirements=requirements,
+                test_count=test_count,
+                prd_context=current_prd_context,
+            )
+
+            # Evaluate
+            eval_result = evaluator.evaluate(
+                prd={"requirements": requirements or [], "text": prd_context or ""},
+                tests={"test_cases": tests},
+                screen=screen,
+                prefer_premium=prefer_premium,
+            )
+
+            metrics = eval_result.get("metrics", {})
+            accuracy = self.compute_accuracy_from_metrics(metrics)
+
+            snapshot = {
+                "iteration": it,
+                "run_id": run_id,
+                "tests": tests,
+                "evaluation": eval_result,
+                "metrics": metrics,
+                "accuracy": accuracy,
+            }
+            history.append(snapshot)
+
+            # Persist snapshot for later inspection
+            try:
+                save_run_snapshot(f"{run_id}-iter{it}", snapshot)
+            except Exception:
+                pass
+
+            # Check threshold
+            if accuracy >= threshold:
+                return {"run_id": run_id, "completed": True, "iterations": it, "history": history, "final": snapshot}
+
+            # Prepare feedback for next iteration: summarize issues and per_requirement notes
+            issues = eval_result.get("issues", []) or []
+            per_req = eval_result.get("per_requirement", []) or []
+
+            feedback_lines = []
+            if issues:
+                feedback_lines.append("Evaluator flagged the following issues:")
+                for iss in issues[:10]:
+                    msg = iss.get("message") or str(iss)
+                    feedback_lines.append(f"- {msg}")
+
+            # Add top per-requirement mismatches
+            mismatches = [r for r in per_req if r.get("scores", {}).get("correctness", 0) < 0.8]
+            if mismatches:
+                feedback_lines.append("Requirements with low correctness:")
+                for r in mismatches[:5]:
+                    rid = r.get("id") or "N/A"
+                    rc = r.get("scores", {}).get("correctness", 0)
+                    feedback_lines.append(f"- {rid}: correctness={rc}")
+
+            if not feedback_lines:
+                feedback_lines.append("No specific issues detected; try improving coverage and clarity.")
+
+            feedback_text = "\n".join(feedback_lines)
+
+            # Augment PRD context for next generation with feedback instructions
+            current_prd_context = (prd_context or "") + "\n\nFEEDBACK FOR REGENERATION:\n" + feedback_text
+
+        # After max iterations, return best snapshot (highest accuracy)
+        best = max(history, key=lambda s: s.get("accuracy", 0.0)) if history else None
+        return {"run_id": run_id, "completed": False, "iterations": max_iterations, "history": history, "best": best}
 
     def validate_test_case(self, test_case: Dict[str, Any]) -> Dict[str, Any]:
         """Validate and clean up a generated test case."""

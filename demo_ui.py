@@ -28,6 +28,7 @@ from app.services.document_parser import DocumentParser
 from app.services.test_generator import TestGenerator
 from app.services.cache_manager import CacheManager
 from app.config import get_settings
+from app.models.database import TestCaseType
 
 settings = get_settings()
 
@@ -767,9 +768,22 @@ with col2:
                     # Try backend HTTP endpoint first
                     try:
                         import httpx
+                        payload = {"prd": prd_payload, "tests": tests_payload, "prefer_premium": prefer_premium}
+                        # include selected screen JSON when evaluating a single selected screen
+                        try:
+                            if selected_screen:
+                                if hasattr(selected_screen, 'model_dump'):
+                                    payload['screen'] = selected_screen.model_dump()
+                                elif hasattr(selected_screen, 'dict'):
+                                    payload['screen'] = selected_screen.dict()
+                                else:
+                                    payload['screen'] = selected_screen
+                        except Exception:
+                            pass
+
                         resp = httpx.post(
                             "http://localhost:8000/api/tests/evaluate",
-                            json={"prd": prd_payload, "tests": tests_payload, "prefer_premium": prefer_premium},
+                            json=payload,
                             timeout=30.0
                         )
                         if resp.status_code == 200:
@@ -784,7 +798,20 @@ with col2:
                         try:
                             from app.services.evaluator import Evaluator
                             evaluator = Evaluator.with_fallback()
-                            eval_result = evaluator.evaluate(prd_payload, tests_payload, prefer_premium=False)
+                            # pass selected screen when available so evaluator focuses on that screen
+                            screen_for_eval = None
+                            try:
+                                if selected_screen:
+                                    if hasattr(selected_screen, 'model_dump'):
+                                        screen_for_eval = selected_screen.model_dump()
+                                    elif hasattr(selected_screen, 'dict'):
+                                        screen_for_eval = selected_screen.dict()
+                                    else:
+                                        screen_for_eval = selected_screen
+                            except Exception:
+                                screen_for_eval = None
+
+                            eval_result = evaluator.evaluate(prd_payload, tests_payload, screen=screen_for_eval, prefer_premium=False)
                         except Exception as e:
                             st.error(f"Evaluation failed: {e}")
                             eval_result = None
@@ -797,6 +824,84 @@ with col2:
         # Show evaluation if present
         if st.session_state.get('evaluation_metrics'):
             with st.expander("Evaluation Metrics", expanded=True):
+                st.json(st.session_state.get('evaluation_metrics'))
+
+        # --- Manual Feedback & Re-evaluation ---
+        st.divider()
+        st.subheader("Manual Feedback & Re-evaluation")
+        st.write("Provide human feedback describing how generated test cases should improve (focus areas, components, assessment criteria). Click 'Re-generate & Evaluate' to apply the feedback once.")
+
+        fb_test_count = st.number_input("Tests to generate", min_value=1, max_value=20, value=5, step=1)
+        fb_feedback = st.text_area("Feedback / Instructions for regeneration", height=160, placeholder="e.g. Focus on form validation, increase negative scenarios, prioritize the Submit button and error messages, ensure expected results are explicit.")
+        fb_prefer_premium = st.checkbox("Prefer premium evaluator (may use API)", value=False)
+
+        if st.button("Re-generate & Evaluate", use_container_width=True):
+            if not selected_screen:
+                st.error("Select a screen to re-generate tests for.")
+            else:
+                if hasattr(selected_screen, 'model_dump'):
+                    screen_dict = selected_screen.model_dump()
+                elif hasattr(selected_screen, 'dict'):
+                    screen_dict = selected_screen.dict()
+                else:
+                    screen_dict = selected_screen
+
+                generator = TestGenerator()
+                with st.spinner("Regenerating tests with feedback and running evaluation..."):
+                    try:
+                        # Build augmented PRD context by combining original PRD plus feedback
+                        base_prd = st.session_state.get('prd_context') or ""
+                        augmented_prd = base_prd + "\n\nUSER_FEEDBACK:\n" + fb_feedback if fb_feedback else base_prd
+
+                        new_tests = generator.generate_test_cases(
+                            screen=screen_dict,
+                            test_type=TestCaseType.FUNCTIONAL,
+                            requirements=[],
+                            test_count=int(fb_test_count),
+                            prd_context=augmented_prd,
+                        )
+
+                        # Attach source screen
+                        for t in new_tests:
+                            t['_source_screen'] = screen_dict.get('name')
+
+                        st.session_state.test_cases = new_tests
+
+                        # Run evaluation (try server endpoint then local fallback)
+                        prd_payload = {"full_text": augmented_prd}
+                        tests_payload = {"test_cases": new_tests}
+                        eval_result = None
+                        try:
+                            import httpx
+                            resp = httpx.post(
+                                "http://localhost:8000/api/tests/evaluate",
+                                json={"prd": prd_payload, "tests": tests_payload, "prefer_premium": fb_prefer_premium},
+                                timeout=30.0
+                            )
+                            if resp.status_code == 200:
+                                eval_result = resp.json()
+                        except Exception:
+                            eval_result = None
+
+                        if not eval_result:
+                            try:
+                                from app.services.evaluator import Evaluator
+                                evaluator = Evaluator.with_fallback()
+                                eval_result = evaluator.evaluate(prd_payload, tests_payload, screen=screen_dict, prefer_premium=fb_prefer_premium)
+                            except Exception as e:
+                                st.error(f"Evaluation failed: {e}")
+                                eval_result = None
+
+                        if eval_result:
+                            st.session_state.evaluation = eval_result
+                            st.session_state.evaluation_metrics = eval_result.get('metrics', {})
+                            st.success("Re-generation and evaluation complete")
+                    except Exception as e:
+                        st.error(f"Re-generation failed: {e}")
+
+        # Show last manual feedback evaluation
+        if st.session_state.get('evaluation_metrics'):
+            with st.expander("Latest Evaluation Metrics", expanded=True):
                 st.json(st.session_state.get('evaluation_metrics'))
     else:
         if st.session_state.screens:
