@@ -1,6 +1,6 @@
 .prd-wrapper {
   --radius: 0.5rem;
-
+  overflow: hidden;
   .page-title {
     margin: 0 0 0.625rem;
     font-size: var(--df-title-size);
@@ -54,6 +54,8 @@
   padding: 1rem;
   border-radius: var(--radius);
   background-color: white;
+  overflow: auto;
+  height: 60vh;
 }
 
 .section-title {
