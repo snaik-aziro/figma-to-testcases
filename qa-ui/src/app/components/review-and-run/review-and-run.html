@@ -45,52 +45,56 @@
 
   <!-- TEST CASE PREVIEW -->
   <h3 class="preview-title">Test Cases Preview</h3>
+  <div class="accordion-container">
+    <mat-accordion class="test-accordion">
 
-  <mat-accordion class="test-accordion">
+      <mat-expansion-panel expanded>
+        <mat-expansion-panel-header>
+          <mat-panel-title> Onboarding Flow </mat-panel-title>
+          <mat-panel-description> 6 tests </mat-panel-description>
+        </mat-expansion-panel-header>
 
-    <mat-expansion-panel expanded>
-      <mat-expansion-panel-header>
-        <mat-panel-title> Onboarding Flow </mat-panel-title>
-        <mat-panel-description> 6 tests </mat-panel-description>
-      </mat-expansion-panel-header>
+        <!-- TEST LIST -->
+        <div class="test-item">
+          <div class="test-title-row">
+            <div class="test-id">TC‑1</div>
+            <div class="test-name">Ensure new users can sign up with a valid email address</div>
+            <div class="priority">
+              <span>Priority</span>
+              <span class="p-high">● High</span>
+            </div>
+          </div>
 
-      <!-- TEST LIST -->
-      <div class="test-item">
-        <div class="test-title-row">
-          <div class="test-id">TC‑1</div>
-          <div class="test-name">Ensure new users can sign up with a valid email address</div>
-          <div class="priority">
-            <span>Priority</span>
-            <span class="p-high">● High</span>
+          <div class="requirements">
+            <div>Requirements:</div>
+            <div class="req-item">
+              • <span class="req-id">Req‑8:</span> The app must allow user to sign up and using OAuth with Google and
+              Facebook
+            </div>
           </div>
         </div>
 
-        <div class="requirements">
-          <strong>Requirements:</strong>
-          <div class="req-item">
-            • <span class="req-id">Req‑8:</span> The app must allow user to sign up and using OAuth with Google and Facebook
+        <div class="test-item">
+          <div class="test-title-row">
+            <div class="test-id">TC‑2</div>
+            <div class="test-name">Check password strength rules during onboarding</div>
+            <div class="priority">
+              <span>Priority</span>
+              <span class="p-medium">● Medium</span>
+            </div>
+          </div>
+
+          <div class="requirements">
+            <div>Requirements:</div>
+            <div class="req-item">
+              • <span class="req-id">Req‑12:</span> The password must be at least 8 characters long and include a number
+              and a special character
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="test-item">
-        <div class="test-title-row">
-          <div class="test-id">TC‑2</div>
-          <div class="test-name">Check password strength rules during onboarding</div>
-          <div class="priority">
-            <span>Priority</span>
-            <span class="p-medium">● Medium</span>
-          </div>
-        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </div>
 
-        <div class="requirements">
-          <strong>Requirements:</strong>
-          <div class="req-item">
-            • <span class="req-id">Req‑12:</span> The password must be at least 8 characters long and include a number and a special character
-          </div>
-        </div>
-      </div>
-
-    </mat-expansion-panel>
-  </mat-accordion>
 </div>

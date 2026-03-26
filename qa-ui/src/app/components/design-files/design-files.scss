@@ -13,7 +13,6 @@
   margin-inline: auto;
   background: white;
   box-sizing: border-box;
-  // padding: 0.5rem 0.625rem;
 }
 
 .rail {
@@ -100,8 +99,8 @@
   grid-area: main;
   min-width: 0;
   min-height: 0;
-  overflow: auto;
   padding: 0.625rem;
+  overflow: hidden;
 }
 
 .bottom-bar {
