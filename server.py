@@ -4,6 +4,7 @@ from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Any, Dict, Optional, List
+import json
 import asyncio
 
 from app.services.figma_client import FigmaClient
@@ -153,7 +154,7 @@ def download_test_run(run_id: str):
     snap = load_run_snapshot(run_id)
     if not snap:
         raise HTTPException(status_code=404, detail="Run not found")
-    return Response(content=str(snap), media_type="application/json")
+    return Response(content=json.dumps(snap, default=str, ensure_ascii=False), media_type="application/json")
 
 
 @app.post("/api/tests/evaluate")

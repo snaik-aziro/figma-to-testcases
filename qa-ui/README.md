@@ -45,34 +45,103 @@ Response:
 The UI should call the backend endpoints below — these are the endpoints currently implemented in `server.py`.
 
 - POST `/api/figma/fetch-cache` — Fetch a Figma file and cache the extracted screens
-  - Request body: `{ "fileUrlOrId": "<file_url_or_id>", "token": "<optional_figma_token>" }`
-  - Response: `{ "cacheId": "<file_id>", "fileId": "<file_id>", "screensCount": 12 }`
+-  - Request body (JSON):
+
+```json
+{
+  "fileUrlOrId": "https://www.figma.com/file/abcd1234/..." ,
+  "token": "<optional_figma_token>"
+}
+```
+
+-  - Response (200 JSON):
+
+```json
+{
+  "cacheId": "abcd1234",
+  "fileId": "abcd1234",
+  "screensCount": 12
+}
+```
 
 - GET `/api/figma/cache` — List cached files (metadata)
-  - Response: `[{ "file_id": "<file_id>", "file_name": "...", "cached_at": "..." }, ...]`
+  - Response (200 JSON): array of metadata objects. Example:
+
+```json
+[
+  {
+    "file_id": "abcd1234",
+    "file_name": "abcd1234",
+    "cached_at": "2026-03-26T12:00:00",
+    "data_size": 12345,
+    "screens_count": 12,
+    "cache_path": ".cache/figma/abcd1234.json"
+  }
+]
+```
 
 - GET `/api/figma/cache/{cacheId}` — Retrieve cached JSON for a file
-  - Response: `{ "cacheId": "<file_id>", "data": { "screens": [ ... ] } }`
+  - Response (200 JSON):
+
+```json
+{
+  "cacheId": "abcd1234",
+  "data": {
+    "screens": [
+      { "node_id": "s1", "name": "Home", "components": [ ... ], "metadata": { ... } }
+    ]
+  }
+}
+```
 
 - DELETE `/api/figma/cache/{cacheId}` — Delete a cached file
-  - Response: `{ "cacheId": "<file_id>", "status": "deleted" }`
+  - Response (200 JSON): `{ "cacheId": "abcd1234", "status": "deleted" }`
 
 - POST `/api/tests/generate` — Generate tests from a cached screen
-  - Request body: `{ "cacheId": "<file_id>", "screenId": "<figma_node_id>", "testType": "functional", "testCount": 5 }`
-  - Response: `{ "runId": "run_...", "testCount": 5, "tests": [ ... ] }`
+  - Request body (JSON):
+
+```json
+{
+  "cacheId": "abcd1234",
+  "screenId": "5:10",
+  "testType": "functional",
+  "testCount": 5,
+  "prefer_premium": false
+}
+```
+
+- Response (200 JSON):
+
+```json
+{
+  "runId": "run-20260327T...",
+  "testCount": 5,
+  "tests": [ /* array of generated test case objects */ ]
+}
+```
 
 - GET `/api/tests/runs` — List generated test run IDs
-  - Response: `{ "runs": ["run_20260317T...", ...] }`
+  - Response (200 JSON): `{ "runs": ["run-20260327T...", ...] }`
 
 - GET `/api/tests/runs/{runId}` — Retrieve a saved run snapshot (generated tests)
   - Response: `{ "run_id": "...", "cache_id": "...", "screen_id": "...", "tests": [ ... ] }`
 
 - GET `/api/tests/runs/{runId}/download` — Download run JSON
-  - Response: JSON content (application/json)
+  - Response (200 JSON): the saved run snapshot, with content-type `application/json`.
 
 - POST `/api/tests/evaluate` — Evaluate tests using the Evaluator (existing endpoint)
-  - Request body: `{ "prd": {...}, "tests": {...}, "screen": {...}, "prefer_premium": false }`
-  - Response: evaluator result object
+  - Request body (JSON):
+
+```json
+{
+  "prd": { "requirements": [...], "text": "..." },
+  "tests": { "test_cases": [ ... ] },
+  "screen": { /* optional screen object */ },
+  "prefer_premium": false
+}
+```
+
+- Response (200 JSON): evaluator result object
 
 Notes:
 - These endpoints currently run synchronously: `/api/figma/fetch-cache` returns the cacheId after fetching; there is no background job/status endpoint implemented. If you need polling/progress, we can add a job/status flow.
