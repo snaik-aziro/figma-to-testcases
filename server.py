@@ -13,6 +13,11 @@ from app.services.test_generator import TestGenerator
 from app.services.feedback_manager import save_run_snapshot, new_run_id, load_run_snapshot
 from app.models.database import TestCaseType
 from app.services import Evaluator
+from app.services.document_parser import DocumentParser
+from app.services.prd_analyzer import analyze_prd
+from fastapi import UploadFile, File, Form, Request
+import tempfile
+import os
 
 
 app = FastAPI()
@@ -165,3 +170,110 @@ def evaluate(req: Dict[str, Any]):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/analyze")
+async def analyze(request: Request):
+    """Analyze cached Figma JSON and optional PRD (text or uploaded file).
+
+    Accepts either JSON body: { "cacheId": "<file_id>", "prdText": "...", "options": { ... } }
+    or multipart form with `cacheId` and an uploaded `prdFile`.
+    Returns filtered screens and metrics.
+    """
+    # Support both JSON and form uploads
+    content_type = request.headers.get('content-type', '')
+    cache_id = None
+    prd_text = None
+    apply_filtering = True
+    options = {}
+
+    if 'application/json' in content_type:
+        body = await request.json()
+        cache_id = body.get('cacheId') or body.get('cache_id')
+        prd_text = body.get('prdText') or body.get('prd_text')
+        options = body.get('options', {}) or {}
+        apply_filtering = bool(options.get('applyFiltering', True))
+    else:
+        form = await request.form()
+        cache_id = form.get('cacheId') or form.get('cache_id')
+        prd_text = form.get('prdText') or form.get('prd_text')
+        # uploaded file
+        prd_file = form.get('prdFile') if 'prdFile' in form else None
+        if prd_file:
+            # Save to temp file and parse
+            with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(prd_file.filename)[1]) as tmp:
+                tmp.write(await prd_file.read())
+                tmp_path = tmp.name
+            try:
+                parser = DocumentParser()
+                parsed = parser.parse_file(tmp_path)
+                prd_text = parsed.get('full_text')
+                # also include parsed requirements
+                options['requirements_parsed'] = parser.extract_requirements(parsed)
+            finally:
+                try:
+                    os.unlink(tmp_path)
+                except Exception:
+                    pass
+        apply_filtering = bool(form.get('applyFiltering', 'true').lower() in ['true', '1', 'yes'])
+
+    if not cache_id:
+        raise HTTPException(status_code=400, detail="cacheId is required")
+
+    cached = cache_manager.load(cache_id)
+    if not cached:
+        raise HTTPException(status_code=404, detail="Cache not found")
+
+    raw_screens = cached.get('screens', [])
+
+    # PRD analysis
+    prd_signals = {}
+    parsed_requirements = options.get('requirements_parsed', None)
+    if prd_text:
+        prd_signals = analyze_prd(prd_text)
+        # if requirements not already parsed, run lightweight parsing
+        if parsed_requirements is None:
+            try:
+                parser = DocumentParser()
+                parsed = parser.parse_text(prd_text)
+                parsed_requirements = parser.extract_requirements(parsed)
+            except Exception:
+                parsed_requirements = []
+
+    # Apply filtering using FigmaClient logic
+    filtered_screens = []
+    total_before = 0
+    total_after = 0
+
+    if apply_filtering:
+        for screen in raw_screens:
+            comps = screen.get('components', []) if isinstance(screen, dict) else []
+            total_before += len(comps)
+            temp_client = FigmaClient(access_token="dummy", prd_signals=prd_signals)
+            try:
+                filtered_components = temp_client._filter_components_by_relevance(comps)
+            except Exception:
+                filtered_components = comps
+            filtered = screen.copy() if isinstance(screen, dict) else screen
+            if isinstance(filtered, dict):
+                filtered['components'] = filtered_components
+            filtered_screens.append(filtered)
+            total_after += len(filtered_components)
+    else:
+        filtered_screens = raw_screens
+        total_before = sum(len(s.get('components', []) or []) for s in raw_screens)
+        total_after = total_before
+
+    filter_rate = ((total_before - total_after) / total_before * 100) if total_before > 0 else 0.0
+
+    response = {
+        'cacheId': cache_id,
+        'screensProcessed': len(raw_screens),
+        'totalComponentsBefore': total_before,
+        'totalComponentsAfter': total_after,
+        'filterRate': round(filter_rate, 2),
+        'screens': filtered_screens,
+        'requirements': parsed_requirements or []
+    }
+
+    return response

@@ -94,6 +94,33 @@ The UI should call the backend endpoints below — these are the endpoints curre
 }
 ```
 
+- POST `/api/analyze` — Analyze a cached file and optional PRD, return filtered screens and metrics
+  - Request body (JSON):
+
+```json
+{
+  "cacheId": "abcd1234",
+  "prdText": "Users can sign in using email and password...",
+  "options": { "applyFiltering": true }
+}
+```
+
+  - Or multipart form with `cacheId` and an uploaded `prdFile` (pdf/docx/json/txt).
+
+  - Response (200 JSON):
+
+```json
+{
+  "cacheId": "abcd1234",
+  "screensProcessed": 12,
+  "totalComponentsBefore": 342,
+  "totalComponentsAfter": 128,
+  "filterRate": 62.7,
+  "screens": [ /* filtered screen objects */ ],
+  "requirements": [ /* parsed requirements from PRD if available */ ]
+}
+```
+
 - DELETE `/api/figma/cache/{cacheId}` — Delete a cached file
   - Response (200 JSON): `{ "cacheId": "abcd1234", "status": "deleted" }`
 
