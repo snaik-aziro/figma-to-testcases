@@ -104,7 +104,7 @@
 /* ---------------------- GRID: Summary + Insight ---------------------- */
 .details-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  // grid-template-columns: 1fr 1fr;
   gap: 1.25rem;
   margin-top: 1rem;
 }
@@ -190,20 +190,20 @@
 }
 
 /* ---------------------- PRD VERSION ---------------------- */
-.prd-version {
-  margin-top: 1.25rem;
+// .prd-version {
+//   margin-top: 1.25rem;
 
-  .prd-version-label {
-    font-weight: 600;
-    margin-bottom: 0.4rem;
-    display: block;
-  }
+//   .prd-version-label {
+//     font-weight: 600;
+//     margin-bottom: 0.4rem;
+//     display: block;
+//   }
 
-  .prd-version-box {
-    width: 8rem;
-    height: 2.2rem;
-  }
-}
+//   .prd-version-box {
+//     width: 8rem;
+//     height: 2.2rem;
+//   }
+// }
 
 /* ---------------------- RESPONSIVE ---------------------- */
 @media (max-width: 768px) {

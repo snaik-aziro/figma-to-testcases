@@ -8,10 +8,10 @@
     <div class="icon-wrap">
       <mat-icon fontSet="material-icons-outlined">description</mat-icon>
     </div>
-
     <div class="banner-text">
-      <!-- <div class="title">Upload a Product Requirements Document (PRD)</div> -->
-      <div class="sub">Upload a Product Requirements Document (PRD) to generate test cases based on your product specifications.</div>
+      <div class="sub">
+        Upload a Product Requirements Document (PRD) to generate test cases based on your product specifications.
+      </div>
     </div>
   </div>
 
@@ -22,6 +22,7 @@
 
     <!-- Upload Bar -->
     <div class="upload-bar">
+
       <div class="left">
         <mat-icon class="cloud" fontSet="material-icons-outlined">cloud_upload</mat-icon>
 
@@ -30,17 +31,28 @@
             Limit 200MB per file
             <strong>.PDF, DOCX, TXT, JSON</strong>
           </div>
-          <div class="line2">Limit 200MB per file .PDF, DOCX, TXT, JSON</div>
+
+          <!-- ✅ FILE NAME GOES HERE -->
+          <div class="line2">
+            {{ selectedFile ? selectedFile.name : 'Limit 200MB per file .PDF, DOCX, TXT, JSON' }}
+          </div>
         </div>
       </div>
 
-      <button mat-flat-button color="primary" class="browse-btn">Browse File</button>
+      <!-- ✅ Hidden native input -->
+      <input #fileInput type="file" accept=".pdf,.docx,.txt,.json" hidden (change)="onFileSelected($event)" />
+
+      <!-- ✅ Visible button -->
+      <button mat-flat-button color="primary" class="browse-btn" (click)="fileInput.click()">
+        Browse File
+      </button>
+
     </div>
 
-    <!-- BELOW: Summary + Insights grid -->
-    <div class="details-grid">
 
-      <!-- ✅ PRD Summary -->
+    <!-- Summary -->
+    <div class="details-grid">
+      @if (selectedFile) {
       <mat-card class="summary-card">
 
         <div class="summary-title">
@@ -49,11 +61,10 @@
         </div>
 
         <div class="summary-text">
-          <div><strong>File:</strong> onboarding_prd_v2.docx</div>
-          <div><strong>Size:</strong> 1.8 MB</div>
-          <div><strong>Pages:</strong> 24</div>
-          <div><strong>Sections Detected:</strong> 12</div>
-          <div><strong>Last Modified:</strong> April 14, 2024</div>
+          <div><strong>File:</strong> {{ fileName }}</div>
+          <div><strong>Type:</strong> {{ fileType }}</div>
+          <div><strong>Size:</strong> {{ fileSize }}</div>
+          <div><strong>Last Modified:</strong> {{ lastModified }}</div>
         </div>
 
         <div class="success-box">
@@ -62,9 +73,9 @@
         </div>
 
       </mat-card>
-
+    }
       <!-- ✅ AI Generated Insight -->
-      <mat-card class="insight-card">
+      <!-- <mat-card class="insight-card">
 
         <div class="insight-title-row">
           <span>AI Generated Insight</span>
@@ -109,19 +120,19 @@
 
         </div>
 
-      </mat-card>
+      </mat-card> -->
 
     </div>
 
     <!-- ✅ PRD VERSION SELECT -->
-    <div class="prd-version">
+    <!-- <div class="prd-version">
       <label class="prd-version-label">PRD Version</label>
       <select class="form-select prd-version-box">
         <option>v2.0</option>
         <option>v1.5</option>
         <option>v1.0</option>
       </select>
-    </div>
+    </div> -->
   </mat-card>
 
 </div>
