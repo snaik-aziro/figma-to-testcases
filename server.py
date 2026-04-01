@@ -15,9 +15,10 @@ from app.models.database import TestCaseType
 from app.services import Evaluator
 from app.services.document_parser import DocumentParser
 from app.services.prd_analyzer import analyze_prd
-from fastapi import UploadFile, File, Form, Request
+from fastapi import UploadFile, File, Form, Request, Body
 import tempfile
 import os
+import re
 
 
 app = FastAPI()
@@ -44,6 +45,12 @@ class FigmaFetchResponse(BaseModel):
     cacheId: str
     fileId: str
     screensCount: int
+
+
+class AnalyzeRequest(BaseModel):
+    cacheId: str
+    prdText: Optional[str] = None
+    options: Optional[Dict[str, Any]] = None
 
 
 class GenerateRequest(BaseModel):
@@ -173,14 +180,13 @@ def evaluate(req: Dict[str, Any]):
 
 
 @app.post("/api/analyze")
-async def analyze(request: Request):
+async def analyze(request: Request, analyze_payload: Optional[AnalyzeRequest] = Body(None)):
     """Analyze cached Figma JSON and optional PRD (text or uploaded file).
 
     Accepts either JSON body: { "cacheId": "<file_id>", "prdText": "...", "options": { ... } }
     or multipart form with `cacheId` and an uploaded `prdFile`.
     Returns filtered screens and metrics.
     """
-    # Support both JSON and form uploads
     content_type = request.headers.get('content-type', '')
     cache_id = None
     prd_text = None
@@ -192,6 +198,8 @@ async def analyze(request: Request):
         cache_id = body.get('cacheId') or body.get('cache_id')
         prd_text = body.get('prdText') or body.get('prd_text')
         options = body.get('options', {}) or {}
+        if not isinstance(options, dict):
+            options = {}
         apply_filtering = bool(options.get('applyFiltering', True))
     else:
         form = await request.form()
@@ -215,12 +223,76 @@ async def analyze(request: Request):
                     os.unlink(tmp_path)
                 except Exception:
                     pass
-        apply_filtering = bool(form.get('applyFiltering', 'true').lower() in ['true', '1', 'yes'])
+        try:
+            apply_filtering = bool(form.get('applyFiltering', 'true').lower() in ['true', '1', 'yes'])
+        except Exception:
+            apply_filtering = True
+    # First, prefer the typed body if provided (this populates Swagger UI)
+    if analyze_payload is not None:
+        cache_id = analyze_payload.cacheId
+        prd_text = analyze_payload.prdText
+        options = analyze_payload.options or {}
+        if not isinstance(options, dict):
+            options = {}
+        apply_filtering = bool(options.get('applyFiltering', True))
+    else:
+        # Fallback to interpreting raw JSON or multipart form data
+        if 'application/json' in content_type:
+            body = await request.json()
+            cache_id = body.get('cacheId') or body.get('cache_id')
+            prd_text = body.get('prdText') or body.get('prd_text')
+            options = body.get('options', {}) or {}
+            if not isinstance(options, dict):
+                options = {}
+            apply_filtering = bool(options.get('applyFiltering', True))
+        else:
+            form = await request.form()
+            cache_id = form.get('cacheId') or form.get('cache_id')
+            prd_text = form.get('prdText') or form.get('prd_text')
+            prd_file = form.get('prdFile') if 'prdFile' in form else None
+            if prd_file:
+                # Save to temp file and parse
+                with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(prd_file.filename)[1]) as tmp:
+                    tmp.write(await prd_file.read())
+                    tmp_path = tmp.name
+                try:
+                    parser = DocumentParser()
+                    parsed = parser.parse_file(tmp_path)
+                    prd_text = parsed.get('full_text')
+                    # also include parsed requirements
+                    options['requirements_parsed'] = parser.extract_requirements(parsed)
+                finally:
+                    try:
+                        os.unlink(tmp_path)
+                    except Exception:
+                        pass
+            try:
+                apply_filtering = bool(form.get('applyFiltering', 'true').lower() in ['true', '1', 'yes'])
+            except Exception:
+                apply_filtering = True
 
     if not cache_id:
         raise HTTPException(status_code=400, detail="cacheId is required")
 
-    cached = cache_manager.load(cache_id)
+    cached = None
+    tried_ids = []
+    if isinstance(cache_id, str):
+        tried_ids.append(cache_id)
+        # try extracting leading alphanumeric id (common Figma file ids)
+        m = re.match(r"^([A-Za-z0-9_-]+)", cache_id)
+        if m:
+            short = m.group(1)
+            if short not in tried_ids:
+                tried_ids.append(short)
+    for cid in tried_ids:
+        try:
+            cached = cache_manager.load(cid)
+        except Exception:
+            cached = None
+        if cached is not None:
+            cache_id = cid
+            break
+
     if not cached:
         raise HTTPException(status_code=404, detail="Cache not found")
 
