@@ -1,40 +1,70 @@
 <div class="figma-panel" role="region" aria-label="Figma connection">
+
   <div class="panel-head">
     <h3 class="panel-title">Connect Figma Design</h3>
-     <button matButton="outlined">Test Connection</button>
+    <button
+      mat-stroked-button
+      (click)="generateTestCases()"
+      [disabled]="figmaForm.invalid"
+    >
+      Test Connection
+    </button>
   </div>
 
-  <div class="form-grid">
+  <!-- ✅ FormGroup wrapper -->
+  <form class="form-grid" [formGroup]="figmaForm">
 
-    <div class="full">
-      <label class="form-label" for="figmaUrl">File URL</label>
-      <input id="figmaUrl" class="form-control form-control-compact" placeholder="https://www.figma.com/file/..." />
+    <div class="half">
+      <label class="form-label">File URL</label>
+      <input
+        class="form-control form-control-compact"
+        placeholder="https://www.figma.com/file/..."
+        formControlName="fileUrlOrId"
+      />
+
+      <label class="form-label">Access Token</label>
+      <input
+        type="password"
+        class="form-control form-control-compact"
+        placeholder="figma_access_token"
+        formControlName="token"
+      />
     </div>
 
     <div class="half">
-      <label class="form-label" for="figmaPages">Select Figma Pages</label>
-      <select id="figmaPages" class="form-select form-select-compact">
-        <option selected>All Pages</option>
+      <label class="form-label">Select Figma Pages</label>
+      <select
+        class="form-select form-select-compact"
+        formControlName="page"
+      >
+        <option>All Pages</option>
         <option>Login</option>
         <option>Dashboard</option>
         <option>Cart</option>
       </select>
     </div>
-    <div class="half"></div>
-  </div>
 
-  <div class="options">
-    <div class="form-check">
-      <input class="form-check-input" type="checkbox" id="cacheCheck" checked />
-      <label class="form-check-label" for="cacheCheck">Cache design for reuse</label>
+    <!-- ✅ MOVE CHECKBOX HERE -->
+    <div class="options">
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="cacheCheck"
+          formControlName="cache"
+        />
+        <label class="form-check-label" for="cacheCheck">
+          Cache design for reuse
+        </label>
+      </div>
+
+      <button class="link-btn" type="button">
+        <mat-icon fontSet="material-icons-outlined">visibility</mat-icon>
+        <span>View cached designs</span>
+      </button>
     </div>
 
-    <button class="link-btn" type="button">
-      <mat-icon fontSet="material-icons-outlined">visibility</mat-icon>
-      <span>View cached designs</span>
-    </button>
-  </div>
-
+  </form>
   <div class="alert error" role="alert">
     <mat-icon fontSet="material-icons-outlined">error_outline</mat-icon>
     <div class="text">
@@ -45,4 +75,5 @@
       </ul>
     </div>
   </div>
+
 </div>

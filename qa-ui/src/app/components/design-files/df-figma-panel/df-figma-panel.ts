@@ -1,13 +1,57 @@
 import { Component } from '@angular/core';
+import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { ApiService } from '../../../services/api-service';
+import { StorageService } from '../../../shared/services/storage-service';
 
 @Component({
   selector: 'app-df-figma-panel',
   standalone: true,
-  imports: [MatCardModule, MatButtonModule, MatIconModule],
+  imports: [
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    ReactiveFormsModule
+  ],
   templateUrl: './df-figma-panel.html',
   styleUrls: ['./df-figma-panel.scss']
 })
-export class DfFigmaPanelComponent {}
+export class DfFigmaPanelComponent {
+
+  figmaForm = new FormGroup({
+    fileUrlOrId: new FormControl('', Validators.required),
+    token: new FormControl('', Validators.required),
+    page: new FormControl('All Pages'),
+    cache: new FormControl(true)
+  });
+
+  constructor(private api: ApiService,
+    private storageService: StorageService
+  ) { }
+
+  generateTestCases() {
+    if (this.figmaForm.invalid) {
+      this.figmaForm.markAllAsTouched();
+      return;
+    }
+
+    const payload = {
+      fileUrlOrId: this.figmaForm.value.fileUrlOrId,
+      token: this.figmaForm.value.token,
+      options: {
+        page: this.figmaForm.value.page,
+        cache: this.figmaForm.value.cache
+      }
+    };
+
+    this.api.generateTestCases(payload).subscribe({
+      next: res => {
+        console.log('API response:', res);
+        this.storageService.setDesignFilesData(res);
+      },
+      error: err => console.error('API error:', err)
+    });
+  }
+}
