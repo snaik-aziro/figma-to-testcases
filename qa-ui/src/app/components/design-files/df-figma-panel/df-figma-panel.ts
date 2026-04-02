@@ -41,17 +41,23 @@ export class DfFigmaPanelComponent {
       fileUrlOrId: this.figmaForm.value.fileUrlOrId,
       token: this.figmaForm.value.token,
       options: {
-        page: this.figmaForm.value.page,
-        cache: this.figmaForm.value.cache
+        // page: this.figmaForm.value.page,
+        // cache: this.figmaForm.value.cache
       }
     };
 
-    this.api.generateTestCases(payload).subscribe({
-      next: res => {
-        console.log('API response:', res);
-        this.storageService.setDesignFilesData(res);
-      },
-      error: err => console.error('API error:', err)
-    });
+    const mockResponse = {
+      "cacheId": "z8KzX9eaO53rDOb887HYWv",
+      "fileId": "z8KzX9eaO53rDOb887HYWv",
+      "screensCount": 107
+    };
+    this.storageService.setDesignFilesFigmaData(mockResponse);
+
+    // this.api.generateTestCases(payload).subscribe({
+    //   next: res => {
+    //     this.storageService.setDesignFilesFigmaData(res);
+    //   },
+    //   error: err => console.error('API error:', err)
+    // });
   }
 }

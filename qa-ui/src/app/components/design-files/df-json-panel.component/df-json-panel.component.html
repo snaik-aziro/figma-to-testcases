@@ -18,13 +18,32 @@
 
   <h3 class="panel-title mt">Select Cached JSON File</h3>
 
-  <div class="cached-row">
-    <div class="name" title="8fXCxeeDSsn7070b857TNW-[2022-02-01T21.25:54S5:54].json">
-      8fXCxeeDSsn7070b857TNW-[2022-02-01T21.25:54S5:54].json
-    </div>
+  @if (cachedFiles.length > 0) {
 
-    <button mat-flat-button class="select-btn">Select File</button>
+  <div class="half">
+    <label class="form-label">Select Cached Design</label>
+
+    <select class="form-select form-select-compact" (change)="onCachedIndexSelect($event)">
+      <option value="" selected disabled>
+        Select a cached design
+      </option>
+
+      @for (file of cachedFiles; let i = $index; track file.cacheId ?? file.fileId) {
+      <option [value]="i">
+        {{ file.fileId || file.cacheId }}
+      </option>
+      }
+    </select>
   </div>
+
+  } @else {
+
+  <div class="text-muted">
+    No cached JSON designs available.
+  </div>
+
+  }
+
 
   <button class="link-btn clear-btn" type="button">
     <mat-icon fontSet="material-icons-outlined">close</mat-icon>

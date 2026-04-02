@@ -1,4 +1,4 @@
-import { Component, ContentChild, Input, TemplateRef, ViewChild, ElementRef, signal } from '@angular/core';
+import { Component, ContentChild, Input, TemplateRef, ViewChild, ElementRef, signal, effect } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,6 +13,8 @@ import { DfJsonPanelComponent } from './df-json-panel.component/df-json-panel.co
 /* Step‑2 and Step‑3 components (rendered inside MAIN) */
 import { PrdUpload } from '../prd-upload/prd-upload';
 import { ReviewAndRun } from '../review-and-run/review-and-run';
+import { StorageService } from '../../shared/services/storage-service';
+import { ApiService } from '../../services/api-service';
 
 export interface Steps {
   key: string;
@@ -37,9 +39,16 @@ export class DesignFiles {
   /** Steps for the left rail & footer dots (order matters) */
   @Input() steps: Steps[] = [
     { key: 'design', label: 'Design Source' },
-    { key: 'prd',    label: 'PRD Upload' },
+    { key: 'prd', label: 'PRD Upload' },
     { key: 'review', label: 'Review & Run' },
   ];
+
+  constructor(
+    private api: ApiService,
+    private storageService: StorageService
+  ) {
+    this.getFilesByCacheId();
+  }
 
   /** In‑page step index (0 = Design, 1 = PRD, 2 = Review) */
   activeIndex = 0;
@@ -52,7 +61,7 @@ export class DesignFiles {
   @ContentChild('content', { read: TemplateRef }) contentTpl?: TemplateRef<unknown>;
 
   /** Step‑1: source toggle (UI‑only) */
-  source = signal<SourceType>('json');
+  source = signal<SourceType>('figma');
   setSource(s: SourceType) { this.source.set(s); }
 
   /** Main scroll container ref (to scroll to top on step change) */
@@ -89,4 +98,28 @@ export class DesignFiles {
     const host = this.mainEl?.nativeElement;
     if (host) host.scrollTo({ top: 0, behavior: 'auto' });
   }
+
+  private jsonApiCalled = false;
+
+  private getFilesByCacheId() {
+    effect(() => {
+      const currentSource = this.source();
+
+      if (currentSource === 'json' && !this.jsonApiCalled) {
+        this.jsonApiCalled = true;
+
+        const cachedId = JSON.parse(sessionStorage.getItem('design_files_figma_data') || '{}').cacheId;
+        this.api.getFilesByCacheId(cachedId).subscribe({
+          next: res => {
+            this.storageService.setDesignFilesJsonData(res);
+          },
+          error: err => {
+            console.error('Failed to fetch cached JSON designs', err);
+            this.jsonApiCalled = false; // allow retry if needed
+          }
+        });
+      }
+    });
+  }
+
 }

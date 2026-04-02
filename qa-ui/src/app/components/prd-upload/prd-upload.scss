@@ -150,44 +150,44 @@
 }
 
 /* INSIGHT CARD */
-.insight-card {
-  border: 1px solid #ddd;
-  border-radius: var(--radius);
-  padding: 1rem;
-  background: white;
+// .insight-card {
+//   border: 1px solid #ddd;
+//   border-radius: var(--radius);
+//   padding: 1rem;
+//   background: white;
 
-  .insight-title-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 700;
-    margin-bottom: 0.625rem;
+//   .insight-title-row {
+//     display: flex;
+//     justify-content: space-between;
+//     align-items: center;
+//     font-weight: 700;
+//     margin-bottom: 0.625rem;
 
-    .prd-select {
-      width: 6rem;
-      height: 2rem;
-      font-size: 0.85rem;
-    }
-  }
+//     .prd-select {
+//       width: 6rem;
+//       height: 2rem;
+//       font-size: 0.85rem;
+//     }
+//   }
 
-  .options {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
+//   .options {
+//     display: flex;
+//     flex-direction: column;
+//     gap: 0.2rem;
 
-    .option-row {
-      display: flex;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-      align-items: center;
+//     .option-row {
+//       display: flex;
+//       gap: 0.5rem;
+//       font-size: 0.9rem;
+//       align-items: center;
 
-      input[type="radio"],
-      input[type="checkbox"] {
-        transform: scale(1.1);
-      }
-    }
-  }
-}
+//       input[type="radio"],
+//       input[type="checkbox"] {
+//         transform: scale(1.1);
+//       }
+//     }
+//   }
+// }
 
 /* ---------------------- PRD VERSION ---------------------- */
 // .prd-version {
