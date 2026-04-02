@@ -25,4 +25,15 @@ export class ApiService {
     );
 
   }
+
+  getFilesByCacheId(cacheId: string): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    });
+    return this.http.get(
+      `${this.baseUrl}/figma/cache/${cacheId}`,
+      { headers }
+    );
+  }
 }
