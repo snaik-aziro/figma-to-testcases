@@ -59,6 +59,9 @@ class GenerateRequest(BaseModel):
     testType: Optional[str] = "functional"
     testCount: Optional[int] = 5
     prefer_premium: Optional[bool] = False
+    prdText: Optional[str] = None
+    options: Optional[Dict[str, Any]] = None
+    generateAll: Optional[bool] = False
 
 
 @app.post("/api/figma/fetch-cache", response_model=FigmaFetchResponse)
@@ -103,36 +106,218 @@ def delete_cached_file(cache_id: str):
 
 
 @app.post("/api/tests/generate")
-def generate_tests(req: GenerateRequest):
+async def generate_tests(request: Request, req: Optional[GenerateRequest] = Body(None)):
     """Generate test cases for the specified screen from cached data.
 
     Request must provide `cacheId` (the figma file id used as cache key) and `screenId` (figma node id).
     """
     try:
-        cached = cache_manager.load(req.cacheId)
+        # Support both typed JSON body (via `GenerateRequest`) and multipart/form-data
+        content_type = request.headers.get('content-type', '')
+        payload = {}
+        prd_text = None
+        options = {}
+
+        if req is not None:
+            payload = req.dict()
+            prd_text = req.prdText
+            options = req.options or {}
+        else:
+            if 'application/json' in content_type:
+                body = await request.json()
+                payload = body
+                prd_text = body.get('prdText') or body.get('prd_text')
+                options = body.get('options', {}) or {}
+            else:
+                form = await request.form()
+                payload = {k: form.get(k) for k in form.keys()}
+                prd_text = form.get('prdText') or form.get('prd_text')
+                options = {}
+                # Handle uploaded PRD file
+                prd_file = form.get('prdFile') if 'prdFile' in form else None
+                if prd_file:
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(prd_file.filename)[1]) as tmp:
+                        tmp.write(await prd_file.read())
+                        tmp_path = tmp.name
+                    try:
+                        parser = DocumentParser()
+                        parsed = parser.parse_file(tmp_path)
+                        prd_text = parsed.get('full_text')
+                        options['requirements_parsed'] = parser.extract_requirements(parsed)
+                    finally:
+                        try:
+                            os.unlink(tmp_path)
+                        except Exception:
+                            pass
+
+        cache_id = payload.get('cacheId') or payload.get('cache_id')
+        screen_id = payload.get('screenId') or payload.get('screen_id')
+        test_type_raw = payload.get('testType') or payload.get('test_type')
+        test_count = int(payload.get('testCount') or payload.get('test_count') or 5)
+        prefer_premium = bool(payload.get('prefer_premium') or payload.get('preferPremium') or False)
+
+        # If generateAll flag is set, screenId is optional. Require cacheId always.
+        generate_all_flag = bool(payload.get('generateAll') or payload.get('generate_all') or False)
+
+        if not cache_id:
+            raise HTTPException(status_code=400, detail="cacheId is required")
+        if not generate_all_flag and not screen_id:
+            raise HTTPException(status_code=400, detail="screenId is required when not generating for all screens")
+
+        # Attempt to load cache (use earlier sanitize logic)
+        cached = None
+        tried_ids = []
+        if isinstance(cache_id, str):
+            tried_ids.append(cache_id)
+            m = re.match(r"^([A-Za-z0-9_-]+)", cache_id)
+            if m:
+                short = m.group(1)
+                if short not in tried_ids:
+                    tried_ids.append(short)
+        for cid in tried_ids:
+            try:
+                cached = cache_manager.load(cid)
+            except Exception:
+                cached = None
+            if cached is not None:
+                cache_id = cid
+                break
+
+        if not cached:
+            # try metadata matches
+            for meta in cache_manager.list_cached_files():
+                fid = meta.get('file_id', '')
+                if fid and (cache_id in fid or fid in cache_id or fid.startswith(cache_id) or cache_id.startswith(fid)):
+                    try:
+                        cached = cache_manager.load(fid)
+                    except Exception:
+                        cached = None
+                    if cached is not None:
+                        cache_id = fid
+                        break
+
         if not cached:
             raise HTTPException(status_code=404, detail="Cache not found")
 
-        screens = cached.get("screens", [])
-        screen = next((s for s in screens if s.get("node_id") == req.screenId or s.get("node_id") == req.screenId), None)
-        if not screen:
-            raise HTTPException(status_code=404, detail="Screen not found in cache")
+        screens = cached.get('screens', [])
 
         # Map test type
         try:
-            ttype = TestCaseType(req.testType)
+            ttype = TestCaseType(test_type_raw)
         except Exception:
             ttype = TestCaseType.FUNCTIONAL
 
-        generator = TestGenerator()
-        tests = generator.generate_test_cases(screen, test_type=ttype, test_count=int(req.testCount))
+        # Prepare PRD context and requirements
+        parsed_requirements = options.get('requirements_parsed') if isinstance(options, dict) else None
+        if prd_text and parsed_requirements is None:
+            try:
+                prd_signals = analyze_prd(prd_text)
+                # lightweight parse of requirements
+                parser = DocumentParser()
+                parsed = parser.parse_text(prd_text)
+                parsed_requirements = parser.extract_requirements(parsed)
+            except Exception:
+                parsed_requirements = []
 
-        # Persist run snapshot for download/listing
+        # Initialize generator
+        try:
+            generator = TestGenerator()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"TestGenerator initialization failed: {e}")
+
+        # batch flag already computed earlier
+
         run_id = new_run_id(prefix="run")
-        snapshot = {"run_id": run_id, "cache_id": req.cacheId, "screen_id": req.screenId, "tests": tests}
-        save_run_snapshot(run_id, snapshot)
+        screens_results = []
+        total_tests = 0
+        errors = []
 
-        return {"runId": run_id, "testCount": len(tests), "tests": tests}
+        if generate_all_flag:
+            for scr in screens:
+                try:
+                    # Normalize to dict
+                    if hasattr(scr, 'model_dump'):
+                        screen_obj = scr.model_dump()
+                    elif hasattr(scr, 'dict'):
+                        screen_obj = scr.dict()
+                    else:
+                        screen_obj = scr
+
+                    sid = screen_obj.get('node_id') or screen_obj.get('id') or 'unknown'
+                    sname = screen_obj.get('name') or 'Unnamed'
+
+                    tests = generator.generate_test_cases(
+                        screen=screen_obj,
+                        test_type=ttype,
+                        requirements=parsed_requirements or [],
+                        test_count=test_count,
+                        prd_context=prd_text,
+                    )
+
+                    screens_results.append({"screen_id": sid, "screen_name": sname, "testCount": len(tests), "tests": tests})
+                    total_tests += len(tests)
+                except Exception as ge:
+                    errors.append({"screen": screen_obj.get('name') if isinstance(screen_obj, dict) else str(scr), "error": str(ge)})
+                    continue
+        else:
+            # Single screen flow
+            if not screen_id:
+                raise HTTPException(status_code=400, detail="screenId is required when not generating for all screens")
+
+            # Flexible lookup: try node_id/id, then exact name, substring name, numeric match
+            screen = None
+            for s in screens:
+                nid = s.get('node_id') or s.get('id') or ''
+                name = s.get('name') or ''
+                if not nid and not name:
+                    continue
+                if screen_id == nid or screen_id == s.get('id'):
+                    screen = s
+                    break
+                if isinstance(name, str) and name == screen_id:
+                    screen = s
+                    break
+                if isinstance(name, str) and screen_id in name:
+                    screen = s
+                    break
+                # numeric fuzzy match (e.g., '011' vs '11')
+                try:
+                    if str(int(screen_id)) == str(int(name)):
+                        screen = s
+                        break
+                except Exception:
+                    pass
+            if not screen:
+                raise HTTPException(status_code=404, detail="Screen not found in cache")
+
+            if hasattr(screen, 'model_dump'):
+                screen_obj = screen.model_dump()
+            elif hasattr(screen, 'dict'):
+                screen_obj = screen.dict()
+            else:
+                screen_obj = screen
+
+            try:
+                tests = generator.generate_test_cases(
+                    screen=screen_obj,
+                    test_type=ttype,
+                    requirements=parsed_requirements or [],
+                    test_count=test_count,
+                    prd_context=prd_text,
+                )
+                screens_results.append({"screen_id": screen_id, "screen_name": screen_obj.get('name'), "testCount": len(tests), "tests": tests})
+                total_tests = len(tests)
+            except Exception as ge:
+                raise HTTPException(status_code=500, detail=str(ge))
+
+        # Persist aggregated run snapshot
+        snapshot = {"run_id": run_id, "cache_id": cache_id, "screens": screens_results, "errors": errors}
+        try:
+            save_run_snapshot(run_id, snapshot)
+        except Exception:
+            pass
+
+        return {"runId": run_id, "totalTestCount": total_tests, "screens": screens_results, "errors": errors}
     except HTTPException:
         raise
     except Exception as e:
