@@ -36,4 +36,18 @@ export class ApiService {
       { headers }
     );
   }
+
+  analyzeFiles(payload: any): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    });
+
+    return this.http.post(
+      `${this.baseUrl}/analyze`,
+      payload,
+      { headers }
+    );
+
+  }
 }

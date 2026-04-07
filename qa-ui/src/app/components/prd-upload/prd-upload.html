@@ -1,6 +1,6 @@
 <div class="prd-wrapper">
 
-  <!-- Page title -->
+  <!-- Page Title -->
   <h2 class="page-title">Upload PRD File</h2>
 
   <!-- Info Banner -->
@@ -10,53 +10,47 @@
     </div>
     <div class="banner-text">
       <div class="sub">
-        Upload a Product Requirements Document (PRD) to generate test cases based on your product specifications.
+        Upload a Product Requirements Document (PRD) to generate test cases.
       </div>
     </div>
   </div>
 
-  <!-- Upload PRD Document Section -->
+  <!-- Upload Card -->
   <mat-card class="upload-card">
 
     <h3 class="section-title">Upload PRD Document</h3>
 
     <!-- Upload Bar -->
     <div class="upload-bar">
-
       <div class="left">
         <mat-icon class="cloud" fontSet="material-icons-outlined">cloud_upload</mat-icon>
-
         <div>
           <div class="line1">
-            Limit 200MB per file
-            <strong>.PDF, DOCX, TXT, JSON</strong>
+            Limit 200MB per file <strong>.PDF, DOCX, TXT, JSON</strong>
           </div>
-
-          <!-- ✅ FILE NAME GOES HERE -->
           <div class="line2">
-            {{ selectedFile ? selectedFile.name : 'Limit 200MB per file .PDF, DOCX, TXT, JSON' }}
+            {{ selectedFile ? selectedFile.name : 'No file selected' }}
           </div>
         </div>
       </div>
 
-      <!-- ✅ Hidden native input -->
       <input #fileInput type="file" accept=".pdf,.docx,.txt,.json" hidden (change)="onFileSelected($event)" />
 
-      <!-- ✅ Visible button -->
       <button mat-flat-button color="primary" class="browse-btn" (click)="fileInput.click()">
         Browse File
       </button>
-
     </div>
 
-
-    <!-- Summary -->
+    <!-- Summary + Insight -->
     <div class="details-grid">
+
+      <!-- PRD Summary -->
       @if (selectedFile) {
       <mat-card class="summary-card">
-
         <div class="summary-title">
-          <mat-icon fontSet="material-icons-outlined" class="green">check_circle</mat-icon>
+          <mat-icon fontSet="material-icons-outlined" class="green">
+            check_circle
+          </mat-icon>
           <span>PRD Summary</span>
         </div>
 
@@ -66,73 +60,49 @@
           <div><strong>Size:</strong> {{ fileSize }}</div>
           <div><strong>Last Modified:</strong> {{ lastModified }}</div>
         </div>
-
-        <div class="success-box">
-          <mat-icon fontSet="material-icons-outlined" class="green">check_circle</mat-icon>
-          PRD uploaded and parsed successfully.
-        </div>
-
       </mat-card>
-    }
-      <!-- ✅ AI Generated Insight -->
-      <!-- <mat-card class="insight-card">
+      }
+
+      <!-- AI Insight -->
+      <mat-card class="insight-card">
 
         <div class="insight-title-row">
           <span>AI Generated Insight</span>
-
-          <select class="form-select prd-select">
-            <option>PRD</option>
-            <option>Alternate File</option>
-          </select>
+          <span>
+            <button mat-icon-button class="refresh-btn" (click)="analyze()">
+              <mat-icon fontSet="material-icons-outlined">refresh</mat-icon>
+            </button>
+          </span>
         </div>
 
-        <div class="options">
+        <!-- Screen Type -->
+        <label class="dropdown-label mb-1">Screen Type</label>
+        <select class="form-select" (change)="onScreenTypeChange($event)">
 
-          <label class="option-row">
-            <input type="radio" name="ai" />
-            <span>Test Case Generation More</span>
-          </label>
+          <option value="" selected disabled>Select Screen Type</option>
 
-          <label class="option-row">
-            <input type="radio" name="ai" />
-            <span>Functional Only</span>
-          </label>
+          @if (screenTypes.length === 0) {
+          <option disabled>No screen types found</option>
+          }
 
-          <label class="option-row">
-            <input type="radio" name="ai" />
-            <span>Functional + Edge Case</span>
-          </label>
+          @for (type of screenTypes; track type) {
+          <option [value]="type">{{ type | titlecase}}</option>
+          }
+        </select>
 
-          <label class="option-row">
-            <input type="radio" name="ai" />
-            <span>Include Negative Testing</span>
-          </label>
+        <!-- Screen Name -->
+        <label class="dropdown-label mb-1">Screen Name</label>
+        <select class="form-select" [disabled]="!selectedScreenType" (change)="onScreenNameChange($event)">
 
-          <label class="option-row">
-            <input type="radio" name="ai" checked />
-            <span>Full Coverage (Recommended)</span>
-          </label>
+          <option value="" selected disabled>Select Screen Name</option>
 
-          <label class="option-row">
-            <input type="checkbox" />
-            <span>Compare with previous version</span>
-          </label>
+          @for (name of filteredNames; track name) {
+          <option [value]="name">{{ name | titlecase}}</option>
+          }
+        </select>
 
-        </div>
-
-      </mat-card> -->
+      </mat-card>
 
     </div>
-
-    <!-- ✅ PRD VERSION SELECT -->
-    <!-- <div class="prd-version">
-      <label class="prd-version-label">PRD Version</label>
-      <select class="form-select prd-version-box">
-        <option>v2.0</option>
-        <option>v1.5</option>
-        <option>v1.0</option>
-      </select>
-    </div> -->
   </mat-card>
-
 </div>

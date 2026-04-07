@@ -46,18 +46,18 @@ export class DfFigmaPanelComponent {
       }
     };
 
-    const mockResponse = {
-      "cacheId": "z8KzX9eaO53rDOb887HYWv",
-      "fileId": "z8KzX9eaO53rDOb887HYWv",
-      "screensCount": 107
-    };
-    this.storageService.setDesignFilesFigmaData(mockResponse);
+    // const mockResponse = {
+    //   "cacheId": "z8KzX9eaO53rDOb887HYWv",
+    //   "fileId": "z8KzX9eaO53rDOb887HYWv",
+    //   "screensCount": 107
+    // };
+    // this.storageService.setDesignFilesFigmaData(mockResponse);
 
-    // this.api.generateTestCases(payload).subscribe({
-    //   next: res => {
-    //     this.storageService.setDesignFilesFigmaData(res);
-    //   },
-    //   error: err => console.error('API error:', err)
-    // });
+    this.api.generateTestCases(payload).subscribe({
+      next: res => {
+        this.storageService.setDesignFilesFigmaData(res);
+      },
+      error: err => console.error('API error:', err)
+    });
   }
 }
