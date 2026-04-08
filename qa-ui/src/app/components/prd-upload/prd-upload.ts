@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { StorageService } from '../../shared/services/storage-service';
 import { A11yModule } from '@angular/cdk/a11y';
 import { ApiService } from '../../services/api-service';
+import { StorageService } from '../../shared/services/storage-service';
 
 interface ScreenItem {
   name: string;
@@ -23,18 +23,16 @@ interface ScreenItem {
     A11yModule
   ],
   templateUrl: './prd-upload.html',
-  styleUrl: './prd-upload.scss',
+  styleUrls: ['./prd-upload.scss']
 })
 export class PrdUpload implements OnInit {
 
-  /* ---------- File Upload ---------- */
   selectedFile: File | null = null;
   fileName = '';
   fileSize = '';
-  lastModified = '';
   fileType = '';
+  lastModified = '';
 
-  /* ---------- Analysis ---------- */
   analysisResponse: ScreenItem[] = [];
   screenTypes: string[] = [];
   filteredNames: string[] = [];
@@ -42,44 +40,38 @@ export class PrdUpload implements OnInit {
   selectedScreenType: string | null = null;
   selectedScreenName: string | null = null;
 
+  /** ✅ Wizard reads ONLY this */
+  analysisDone = false;
+
   constructor(
-    private sessionStorage: StorageService,
+    private storage: StorageService,
     private api: ApiService
-  ) {}
+  ) { }
 
-  /* ✅ RESTORE DATA ON PAGE LOAD */
   ngOnInit(): void {
-    const stored = this.sessionStorage.getPrdFileData();
-    console.log('Restoring file data from session storage:', stored);
+    const stored = this.storage.getPrdFileData();
     if (stored) {
-      this.fileName = stored?.name;
-      this.fileSize = stored?.sizeLabel;
-      this.fileType = stored?.type;
-      this.lastModified = new Date(stored?.lastModified).toLocaleDateString();
-
-      /**
-       * ✅ IMPORTANT:
-       * We don't have the actual File object after refresh.
-       * But we only need selectedFile truthy to show summary.
-       */
+      this.fileName = stored.name;
+      this.fileSize = stored.sizeLabel;
+      this.fileType = stored.type;
+      this.lastModified = new Date(stored.lastModified).toLocaleDateString();
       this.selectedFile = {} as File;
     }
   }
 
-  /* ✅ File upload handler */
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
+    if (!input.files?.length) return;
 
     const file = input.files[0];
     this.selectedFile = file;
 
     this.fileName = file.name;
-    this.fileSize = this.formatFileSize(file.size);
-    this.lastModified = new Date(file.lastModified).toLocaleDateString();
+    this.fileSize = `${(file.size / 1024).toFixed(1)} KB`;
     this.fileType = file.type || 'Unknown';
+    this.lastModified = new Date(file.lastModified).toLocaleDateString();
 
-    this.sessionStorage.setPrdFileData({
+    this.storage.setPrdFileData({
       name: file.name,
       size: file.size,
       sizeLabel: this.fileSize,
@@ -90,13 +82,6 @@ export class PrdUpload implements OnInit {
     input.value = '';
   }
 
-  private formatFileSize(bytes: number): string {
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
-  }
-
   analyze() {
     const payload = {
       cacheId: 'z8KzX9eaO53rDOb887HYWv',
@@ -105,44 +90,35 @@ export class PrdUpload implements OnInit {
     };
 
     this.api.analyzeFiles(payload).subscribe({
-      next: (response: any) => {
-        const screens: ScreenItem[] = Array.isArray(response?.screens)
-          ? response.screens
+      next: (res: any) => {
+        const screens: ScreenItem[] = Array.isArray(res?.screens)
+          ? res.screens
           : [];
 
         this.analysisResponse = screens;
-
         this.screenTypes = Array.from(
           new Set(
             screens
               .map(s => s.screen_type)
-              .filter(Boolean)
+              .filter((t): t is string => typeof t === 'string')
           )
         );
 
-        this.selectedScreenType = null;
-        this.selectedScreenName = null;
-        this.filteredNames = [];
+        this.analysisDone = true;   // ✅ button changes here
       },
-      error: err => console.error('Analysis error:', err)
+      error: err => console.error(err)
     });
   }
 
   onScreenTypeChange(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    const type = select.value;
-
+    const type = (event.target as HTMLSelectElement).value;
     this.selectedScreenType = type;
-
     this.filteredNames = this.analysisResponse
       .filter(s => s.screen_type === type)
       .map(s => s.name);
-
-    this.selectedScreenName = null;
   }
 
   onScreenNameChange(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    this.selectedScreenName = select.value;
+    this.selectedScreenName = (event.target as HTMLSelectElement).value;
   }
 }
