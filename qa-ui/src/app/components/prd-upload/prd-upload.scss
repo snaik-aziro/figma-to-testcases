@@ -175,12 +175,7 @@
     }
   }
 
-  .options {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-
-    .option-row {
+  .option-row {
       display: flex;
       gap: 0.5rem;
       font-size: 0.9rem;
@@ -191,7 +186,6 @@
         transform: scale(1.1);
       }
     }
-  }
 }
 
 
