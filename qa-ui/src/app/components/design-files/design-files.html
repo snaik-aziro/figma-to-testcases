@@ -3,111 +3,153 @@
   <!-- LEFT rail: vertical stepper -->
   <aside class="rail" aria-label="Steps">
     <ol class="v-steps">
-  @for (s of steps; let i = $index; track s.key) {
-    <li
-      class="v-step"
-      [class.active]="i === activeIndex"
-      role="button"
-      tabindex="0"
-      (click)="gotoStep(i)"
-      (keydown)="($event.key === 'Enter' || $event.key === ' ') && gotoStep(i)"
-      [attr.aria-current]="i === activeIndex ? 'step' : null"
-      [attr.aria-label]="'Step ' + (i + 1) + ': ' + s.label"
-    >
-      <!-- Numbered circle -->
-      <span class="dot numbered">{{ i + 1 }}</span>
-
-      <!-- Step label -->
-      <span class="label">{{ s.label }}</span>
-    </li>
-  }
-</ol>
+      @for (s of steps; let i = $index; track s.key) {
+        <li
+          class="v-step"
+          [class.active]="i === activeIndex"
+          role="button"
+          tabindex="0"
+          (click)="gotoStep(i)"
+          (keydown)="($event.key === 'Enter' || $event.key === ' ') && gotoStep(i)"
+          [attr.aria-current]="i === activeIndex ? 'step' : null"
+          [attr.aria-label]="'Step ' + (i + 1) + ': ' + s.label"
+        >
+          <span class="dot numbered">{{ i + 1 }}</span>
+          <span class="label">{{ s.label }}</span>
+        </li>
+      }
+    </ol>
   </aside>
 
-  <!-- MAIN content (in-page wizard area) -->
+  <!-- MAIN content -->
   <section class="main" #mainEl>
-    <!-- STEP 1: Design Source -->
+
+    <!-- ✅ STEP 1: Design Source (RESTORED EXACT UI) -->
     @if (activeIndex === 0) {
-    <div class="step-design">
-      <h2 class="page-title">Select Design Source</h2>
+      <div class="step-design">
+        <h2 class="page-title">Select Design Source</h2>
 
-      <div class="source-cards" role="tablist" aria-label="Design source options">
-        <!-- Figma card -->
-        <mat-card class="source-card" [class.active]="source() === 'figma'" role="tab"
-          [attr.aria-selected]="source() === 'figma'" tabindex="0" (click)="setSource('figma')"
-          (keydown)="onCardKey($event, 'figma')" aria-controls="figma-panel"
-          matTooltip="Fetch designs directly from a Figma file">
-          <div class="card-head">
-            <div class="title">
-              <img src="assets/figma-logo-icon-figma-app.svg" alt="Figma logo" />
-              <div>
-                <span>Figma Designs API</span>
-                <p class="desc">Fetch designs directly from a Figma file.</p>
+        <div
+          class="source-cards"
+          role="tablist"
+          aria-label="Design source options"
+        >
+          <!-- FIGMA CARD -->
+          <mat-card
+            class="source-card"
+            [class.active]="source() === 'figma'"
+            role="tab"
+            [attr.aria-selected]="source() === 'figma'"
+            tabindex="0"
+            (click)="setSource('figma')"
+            (keydown)="onCardKey($event, 'figma')"
+            aria-controls="figma-panel"
+            matTooltip="Fetch designs directly from a Figma file"
+          >
+            <div class="card-head">
+              <div class="title">
+                <img
+                  src="assets/figma-logo-icon-figma-app.svg"
+                  alt="Figma logo"
+                />
+                <div>
+                  <span>Figma Designs API</span>
+                  <p class="desc">
+                    Fetch designs directly from a Figma file.
+                  </p>
+                </div>
               </div>
+              @if (source() === 'figma') {
+                <span class="tick" aria-hidden="true"></span>
+              }
             </div>
-            @if (source() === 'figma') { <span class="tick" aria-hidden="true"></span> }
-          </div>
-        </mat-card>
+          </mat-card>
 
-        <!-- Upload JSON card -->
-        <mat-card class="source-card" [class.active]="source() === 'json'" role="tab"
-          [attr.aria-selected]="source() === 'json'" tabindex="0" (click)="setSource('json')"
-          (keydown)="onCardKey($event, 'json')" aria-controls="json-panel"
-          matTooltip="Upload a local JSON file exported from Figma">
-          <div class="card-head">
-            <div class="title">
-              <img src="assets/figma-json-icon.svg" alt="JSON file icon" />
-              <div>
-                <span>Upload JSON File</span>
-                <p class="desc">Upload a JSON file exported from Figma.</p>
+          <!-- JSON CARD -->
+          <mat-card
+            class="source-card"
+            [class.active]="source() === 'json'"
+            role="tab"
+            [attr.aria-selected]="source() === 'json'"
+            tabindex="0"
+            (click)="setSource('json')"
+            (keydown)="onCardKey($event, 'json')"
+            aria-controls="json-panel"
+            matTooltip="Upload a local JSON file exported from Figma"
+          >
+            <div class="card-head">
+              <div class="title">
+                <img
+                  src="assets/figma-json-icon.svg"
+                  alt="JSON file icon"
+                />
+                <div>
+                  <span>Upload JSON File</span>
+                  <p class="desc">
+                    Upload a JSON file exported from Figma.
+                  </p>
+                </div>
               </div>
+              @if (source() === 'json') {
+                <span class="tick" aria-hidden="true"></span>
+              }
             </div>
-            @if (source() === 'json') { <span class="tick" aria-hidden="true"></span> }
-          </div>
-        </mat-card>
+          </mat-card>
+        </div>
+
+        <!-- Load panel based on toggle -->
+        @if (source() === 'figma') {
+          <app-df-figma-panel id="figma-panel"></app-df-figma-panel>
+        } @else {
+          <app-df-json-panel id="json-panel"></app-df-json-panel>
+        }
       </div>
-
-      <!-- Load the panel component based on toggle: Design Source (Figma or JSON) -->
-      @if (source() === 'figma') {
-      <app-df-figma-panel id="figma-panel"></app-df-figma-panel>
-      } @else {
-      <app-df-json-panel id="json-panel"></app-df-json-panel>
-      }
-    </div>
     }
 
-    <!-- STEP 2: PRD Upload (in-page) -->
+    <!-- STEP 2 -->
     @if (activeIndex === 1) {
-    <app-prd-upload></app-prd-upload>
+      <app-prd-upload></app-prd-upload>
     }
 
-    <!-- STEP 3: Review & Run (in-page) -->
+    <!-- STEP 3 -->
     @if (activeIndex === 2) {
-    <app-review-and-run></app-review-and-run>
+      <app-review-and-run></app-review-and-run>
     }
 
   </section>
 
-  <!-- BOTTOM bar -->
+  <!-- BOTTOM BAR -->
   <footer class="bottom-bar" aria-label="Design Files Footer">
     <div class="left-status">
-      <span class="step-text">Step {{ activeIndex + 1 }} of {{ steps.length }}</span>
+      <span class="step-text">
+        Step {{ activeIndex + 1 }} of {{ steps.length }}
+      </span>
       <span class="dots" aria-hidden="true">
         @for (s of steps; let i = $index; track s.key) {
-        <span class="dot" [class.active]="i === activeIndex"></span>
+          <span class="dot" [class.active]="i === activeIndex"></span>
         }
       </span>
     </div>
 
     <div class="actions">
-      <button mat-stroked-button class="btn-back" [hidden]="!canGoBack" (click)="back()">
+      <button
+        mat-stroked-button
+        class="btn-back"
+        [hidden]="!canGoBack"
+        (click)="back()"
+      >
         Back
       </button>
 
-      <button mat-flat-button class="btn-next btn-orange" [disabled]="!canGoNext" (click)="next()">
-        Continue
+      <!-- ✅ Working dynamic button -->
+      <button
+        mat-flat-button
+        class="btn-next btn-orange"
+        (click)="onPrimaryClick()"
+      >
+        {{ primaryButtonLabel }}
       </button>
     </div>
   </footer>
 
-</div>
+</div>  
