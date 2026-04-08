@@ -78,7 +78,6 @@
         <!-- Screen Type -->
         <label class="dropdown-label mb-1">Screen Type</label>
         <select class="form-select" (change)="onScreenTypeChange($event)">
-
           <option value="" selected disabled>Select Screen Type</option>
 
           @if (screenTypes.length === 0) {
@@ -86,21 +85,26 @@
           }
 
           @for (type of screenTypes; track type) {
-          <option [value]="type">{{ type | titlecase}}</option>
+          <option [value]="type">{{ type | titlecase }}</option>
           }
         </select>
 
         <!-- Screen Name -->
         <label class="dropdown-label mb-1">Screen Name</label>
-        <select class="form-select" [disabled]="!selectedScreenType" (change)="onScreenNameChange($event)">
-
+        <select class="form-select" [disabled]="!selectedScreenType || selectAllScreens"
+          (change)="onScreenNameChange($event)">
           <option value="" selected disabled>Select Screen Name</option>
 
           @for (name of filteredNames; track name) {
-          <option [value]="name">{{ name | titlecase}}</option>
+          <option [value]="name">{{ name | titlecase }}</option>
           }
         </select>
 
+        <!-- ✅ SELECT ALL SCREENS (RESTORED) -->
+        <div class="option-row mt-2">
+          <input type="checkbox" [checked]="selectAllScreens" (change)="onSelectAllChange($event.target.checked)" />
+          <span>Select all screens</span>
+        </div>
       </mat-card>
 
     </div>
