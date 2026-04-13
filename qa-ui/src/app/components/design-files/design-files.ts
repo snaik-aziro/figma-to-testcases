@@ -23,7 +23,7 @@ import { DfJsonPanelComponent } from './df-json-panel.component/df-json-panel.co
 import { PrdUpload } from '../prd-upload/prd-upload';
 import { ReviewAndRun } from '../review-and-run/review-and-run';
 import { StorageService } from '../../shared/services/storage-service';
-import { ApiService } from '../../services/api-service';
+import { ApiService } from '../../services/api-service/api-service';
 
 export interface Steps {
   key: string;
@@ -132,6 +132,7 @@ export class DesignFiles {
 
     // ✅ Generate Test Cases
     this.activeIndex++;
+    this.prdUpload.generateTestCases();
     this.scrollMainToTop();
   }
 

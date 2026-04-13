@@ -1,10 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef  } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { StorageService } from '../../shared/services/storage-service';
 import { A11yModule } from '@angular/cdk/a11y';
-import { ApiService } from '../../services/api-service';
+import { ApiService } from '../../services/api-service/api-service';
 import { CommonModule } from '@angular/common';
 
 interface ScreenItem {
@@ -52,16 +52,17 @@ export class PrdUpload implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    const stored = this.sessionStorage.getPrdFileData();
-    if (stored) {
-      this.fileName = stored.name;
-      this.fileSize = stored.sizeLabel;
-      this.fileType = stored.type;
-      this.lastModified = new Date(stored.lastModified).toLocaleDateString();
-      this.selectedFile = {} as File;
-    }
+    // const stored = this.sessionStorage.getPrdFileData();
+    // if (stored) {
+    //   this.fileName = stored.name;
+    //   this.fileSize = stored.sizeLabel;
+    //   this.fileType = stored.type;
+    //   this.lastModified = new Date(stored.lastModified).toLocaleDateString();
+    //   this.selectedFile = {} as File;
+    // }
   }
 
+  // To handle file selection and store file details in session storage
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
@@ -92,8 +93,9 @@ export class PrdUpload implements OnInit {
     return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
   }
 
-  /* ✅ CALLED BY WIZARD */
+  // Called "Analyze" API to analyze the uploaded PRD file and get screen details
   analyze() {
+    //to do replace with realtime data
     const payload = {
       cacheId: 'z8KzX9eaO53rDOb887HYWv',
       prdText: 'Users can sign in using email and password...',
@@ -129,6 +131,29 @@ export class PrdUpload implements OnInit {
     });
   }
 
+  // Called "Generate Test Cases" API based on selected screen or "Select All" option
+  generateTestCases() {
+    const payload = {
+      cacheId: "z8KzX9eaO53rDOb887HYWv",
+      screenId: "011",
+      testType: "functional",
+      testCount: 5,
+      prefer_premium: false,
+      prdText: "string",
+      options: {
+        additionalProp1: {}
+      },
+      "generateAll": this.selectAllScreens
+    }
+    this.api.generateTestCases(payload).subscribe({
+      next: (response: any) => {
+        console.log('Test cases generated:', response);
+      },
+      error: err => console.error('Test case generation error:', err)
+    });
+  }
+
+  // To handle screen type selection change
   onScreenTypeChange(event: Event) {
     const type = (event.target as HTMLSelectElement).value;
     this.selectedScreenType = type;
@@ -140,11 +165,12 @@ export class PrdUpload implements OnInit {
 
     this.selectedScreenName = null;
   }
-
+  // To handle screen name selection change
   onScreenNameChange(event: Event) {
     this.selectedScreenName = (event.target as HTMLSelectElement).value;
   }
 
+  // To handle "Select All" checkbox change
   onSelectAllChange(checked: boolean) {
     this.selectAllScreens = checked;
 

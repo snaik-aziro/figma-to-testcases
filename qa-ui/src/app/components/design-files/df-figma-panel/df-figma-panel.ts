@@ -3,7 +3,7 @@ import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angula
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { ApiService } from '../../../services/api-service';
+import { ApiService } from '../../../services/api-service/api-service';
 import { StorageService } from '../../../shared/services/storage-service';
 
 @Component({
@@ -31,7 +31,7 @@ export class DfFigmaPanelComponent {
     private storageService: StorageService
   ) { }
 
-  generateTestCases() {
+  figmaFetch() {
     if (this.figmaForm.invalid) {
       this.figmaForm.markAllAsTouched();
       return;
@@ -46,15 +46,10 @@ export class DfFigmaPanelComponent {
       }
     };
 
-    // const mockResponse = {
-    //   "cacheId": "z8KzX9eaO53rDOb887HYWv",
-    //   "fileId": "z8KzX9eaO53rDOb887HYWv",
-    //   "screensCount": 107
-    // };
-    // this.storageService.setDesignFilesFigmaData(mockResponse);
-
-    this.api.generateTestCases(payload).subscribe({
+    this.api.figmaFetch(payload).subscribe({
       next: res => {
+        console.log('payload sent to API:', payload);
+        console.log('Figma fetch response:', res);
         this.storageService.setDesignFilesFigmaData(res);
       },
       error: err => console.error('API error:', err)
