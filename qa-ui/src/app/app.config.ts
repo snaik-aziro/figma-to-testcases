@@ -1,12 +1,27 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig } from '@angular/core';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 import { provideRouter } from '@angular/router';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 import { routes } from './app.routes';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { AppHttpInterceptor } from '../app/services/interceptor/http-interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideBrowserGlobalErrorListeners(),
-    provideRouter(routes), provideClientHydration(withEventReplay())
-  ]
+    // ✅ ROUTER PROVIDERS (FIXES ActivatedRoute)
+    provideRouter(routes),
+
+    // ✅ HTTP CLIENT + INTERCEPTORS
+    provideHttpClient(withInterceptorsFromDi()),
+
+    // ✅ GLOBAL INTERCEPTOR
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AppHttpInterceptor,
+      multi: true,
+    },
+  ],
 };
