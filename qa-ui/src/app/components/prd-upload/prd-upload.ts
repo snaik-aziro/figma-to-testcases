@@ -131,28 +131,6 @@ export class PrdUpload implements OnInit {
     });
   }
 
-  // Called "Generate Test Cases" API based on selected screen or "Select All" option
-  generateTestCases() {
-    const payload = {
-      cacheId: "z8KzX9eaO53rDOb887HYWv",
-      screenId: "011",
-      testType: "functional",
-      testCount: 5,
-      prefer_premium: false,
-      prdText: "string",
-      options: {
-        additionalProp1: {}
-      },
-      "generateAll": this.selectAllScreens
-    }
-    this.api.generateTestCases(payload).subscribe({
-      next: (response: any) => {
-        console.log('Test cases generated:', response);
-      },
-      error: err => console.error('Test case generation error:', err)
-    });
-  }
-
   // To handle screen type selection change
   onScreenTypeChange(event: Event) {
     const type = (event.target as HTMLSelectElement).value;
