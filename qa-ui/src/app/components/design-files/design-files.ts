@@ -6,7 +6,8 @@ import {
   ViewChild,
   ElementRef,
   signal,
-  effect
+  effect,
+  ChangeDetectorRef
 } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -24,13 +25,7 @@ import { PrdUpload } from '../prd-upload/prd-upload';
 import { ReviewAndRun } from '../review-and-run/review-and-run';
 import { StorageService } from '../../shared/services/storage-service';
 import { ApiService } from '../../services/api-service/api-service';
-
-export interface Steps {
-  key: string;
-  label: string;
-}
-
-type SourceType = 'json' | 'figma';
+import { Steps, SourceType } from '../../shared/models/design-files.model';
 
 @Component({
   selector: 'app-design-files',
@@ -80,10 +75,12 @@ export class DesignFiles {
 
   @ViewChild('mainEl') mainEl?: ElementRef<HTMLElement>;
   @ViewChild(PrdUpload) prdUpload!: PrdUpload;
+  @ViewChild(ReviewAndRun) reviewAndRun!: ReviewAndRun;
 
   constructor(
     private api: ApiService,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private cdr: ChangeDetectorRef
   ) {
     this.getFilesByCacheId();
   }
@@ -132,7 +129,8 @@ export class DesignFiles {
 
     // ✅ Generate Test Cases
     this.activeIndex++;
-    this.prdUpload.generateTestCases();
+    this.cdr.detectChanges();  // Force change detection to instantiate ReviewAndRun
+    this.reviewAndRun.generateTestCases();
     this.scrollMainToTop();
   }
 
