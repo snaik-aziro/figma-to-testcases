@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, ChangeDetectionStrategy, input, effect } from '@angular/core';
+import { Component, DestroyRef, inject, ChangeDetectionStrategy, input, effect, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -25,12 +25,25 @@ import { GenerateTestCasesPayloadResponse, GenerateTestCasesPayload } from '../.
 export class ReviewAndRun {
   private destroyRef = inject(DestroyRef);
 
-
   generationTrigger = input<number>(0);
   private previousTriggerValue = 0;
 
+  /*
+   * Reactive signal that holds the generated test cases data.
+   * Automatically triggers change detection when updated.
+   */
+  generatedTestCases = signal<GenerateTestCasesPayloadResponse>({
+    runId: '',
+    totalTestCount: 0,
+    screens: [],
+    errors: []
+  });
+
   constructor(private api: ApiService) {
-    // ✅ Watch the trigger input and auto-generate test cases (only on change)
+    /*
+     * Watch the trigger input and auto-generate test cases (only on change).
+     * The effect re-runs whenever generationTrigger changes and compares with previous value.
+     */
     effect(() => {
       const currentValue = this.generationTrigger();
       if (currentValue !== this.previousTriggerValue) {
@@ -40,14 +53,11 @@ export class ReviewAndRun {
     });
   }
 
-  generatedTestCases: GenerateTestCasesPayloadResponse = {
-    runId: '',
-    totalTestCount: 0,
-    screens: [],
-    errors: []
-  };
-
- // Called "Generate Test Cases" API based on selected screen or "Select All" option
+ /*
+   * Generates test cases by calling the API with the payload.
+   * Updates the generatedTestCases signal with the response.
+   * The signal automatically triggers change detection and re-renders the UI.
+   */
   generateTestCases() {
     const payload: GenerateTestCasesPayload = {
       cacheId: "z8KzX9eaO53rDOb887HYWv",
@@ -66,7 +76,8 @@ export class ReviewAndRun {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response: GenerateTestCasesPayloadResponse) => {
-          this.generatedTestCases = response;
+          /* Update the reactive signal with the fetched test cases */
+          this.generatedTestCases.set(response);
           console.log('Test cases generated:', response);
         },
         error: err => console.error('Test case generation error:', err)

@@ -44,7 +44,7 @@
   <div class="accordion-container">
     <mat-accordion class="test-accordion">
 
-      @for (screen of generatedTestCases.screens; track screen.screen_id) {
+      @for (screen of generatedTestCases().screens; track screen.screen_id) {
         <mat-expansion-panel expanded>
           <mat-expansion-panel-header>
             <mat-panel-title>{{ screen.screen_name }}</mat-panel-title>
