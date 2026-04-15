@@ -74,6 +74,8 @@ export class DesignFiles {
 
   /* Step‑1 source toggle */
   source = signal<SourceType>('figma');
+  generateTestCasesTrigger = signal(0);  // ✅ Signal to trigger test case generation
+
   setSource(s: SourceType) {
     this.source.set(s);
     // ✅ When switching to JSON, fetch the files
@@ -142,8 +144,8 @@ export class DesignFiles {
 
     // ✅ Generate Test Cases
     this.activeIndex++;
-    this.cdr.detectChanges();  // Force change detection to instantiate ReviewAndRun
-    this.reviewAndRun?.generateTestCases();
+    this.cdr.detectChanges();
+    this.generateTestCasesTrigger.update(v => v + 1);  // ✅ Trigger generation via signal
     this.scrollMainToTop();
   }
 

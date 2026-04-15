@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, DestroyRef, inject, ChangeDetectionStrategy, input, effect } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -25,7 +25,20 @@ import { GenerateTestCasesPayloadResponse, GenerateTestCasesPayload } from '../.
 export class ReviewAndRun {
   private destroyRef = inject(DestroyRef);
 
-  constructor(private api: ApiService) { }
+
+  generationTrigger = input<number>(0);
+  private previousTriggerValue = 0;
+
+  constructor(private api: ApiService) {
+    // ✅ Watch the trigger input and auto-generate test cases (only on change)
+    effect(() => {
+      const currentValue = this.generationTrigger();
+      if (currentValue !== this.previousTriggerValue) {
+        this.previousTriggerValue = currentValue;
+        this.generateTestCases();
+      }
+    });
+  }
 
   generatedTestCases: GenerateTestCasesPayloadResponse = {
     runId: '',
