@@ -1,11 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, DestroyRef, inject, ChangeDetectionStrategy } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 // import { Loader } from '../../shared/loader/loader';
 import { ApiService } from '../../services/api-service/api-service';
-import { GeneratedTestCasesResponse } from '../../shared/models/test-case.model';
+import { GenerateTestCasesPayloadResponse, GenerateTestCasesPayload } from '../../shared/models/api.models';
 
 @Component({
   selector: 'app-review-and-run',
@@ -18,12 +19,15 @@ import { GeneratedTestCasesResponse } from '../../shared/models/test-case.model'
     // Loader
   ],
   templateUrl: './review-and-run.html',
-  styleUrls: ['./review-and-run.scss']
+  styleUrls: ['./review-and-run.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ReviewAndRun {
-constructor(private api: ApiService) { }
+  private destroyRef = inject(DestroyRef);
 
-  generatedTestCases: GeneratedTestCasesResponse = {
+  constructor(private api: ApiService) { }
+
+  generatedTestCases: GenerateTestCasesPayloadResponse = {
     runId: '',
     totalTestCount: 0,
     screens: [],
@@ -32,7 +36,7 @@ constructor(private api: ApiService) { }
 
  // Called "Generate Test Cases" API based on selected screen or "Select All" option
   generateTestCases() {
-    const payload = {
+    const payload: GenerateTestCasesPayload = {
       cacheId: "z8KzX9eaO53rDOb887HYWv",
       screenId: "011",
       testType: "functional",
@@ -42,15 +46,18 @@ constructor(private api: ApiService) { }
       options: {
         additionalProp1: {}
       },
-      "generateAll": false
-    }
-    this.api.generateTestCases(payload).subscribe({
-      next: (response: any) => {
-        this.generatedTestCases = response;
-        console.log('Test cases generated:', response);
-      },
-      error: err => console.error('Test case generation error:', err)
-    });
+      generateAll: false
+    };
+
+    this.api.generateTestCases(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response: GenerateTestCasesPayloadResponse) => {
+          this.generatedTestCases = response;
+          console.log('Test cases generated:', response);
+        },
+        error: err => console.error('Test case generation error:', err)
+      });
   }
 
 }

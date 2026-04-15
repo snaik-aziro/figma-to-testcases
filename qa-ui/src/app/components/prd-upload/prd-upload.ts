@@ -1,16 +1,13 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject, ChangeDetectionStrategy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { StorageService } from '../../shared/services/storage-service';
 import { A11yModule } from '@angular/cdk/a11y';
 import { ApiService } from '../../services/api-service/api-service';
 import { CommonModule } from '@angular/common';
-
-interface ScreenItem {
-  name: string;
-  screen_type: string;
-}
+import { AnalyzeFilesPayload, AnalyzeFilesResponse, ScreenItem } from '../../shared/models/api.models';
 
 @Component({
   selector: 'app-prd-upload',
@@ -24,8 +21,10 @@ interface ScreenItem {
   ],
   templateUrl: './prd-upload.html',
   styleUrls: ['./prd-upload.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PrdUpload implements OnInit {
+  private destroyRef = inject(DestroyRef);
 
   /* ---------- File Upload ---------- */
   selectedFile: File | null = null;
@@ -96,39 +95,41 @@ export class PrdUpload implements OnInit {
   // Called "Analyze" API to analyze the uploaded PRD file and get screen details
   analyze() {
     //to do replace with realtime data
-    const payload = {
+    const payload: AnalyzeFilesPayload = {
       cacheId: 'z8KzX9eaO53rDOb887HYWv',
       prdText: 'Users can sign in using email and password...',
       options: { applyFiltering: true }
     };
 
-    this.api.analyzeFiles(payload).subscribe({
-      next: (response: any) => {
-        const screens: ScreenItem[] = Array.isArray(response?.screens)
-          ? response.screens
-          : [];
+    this.api.analyzeFiles(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response: AnalyzeFilesResponse) => {
+          const screens: ScreenItem[] = Array.isArray(response?.screens)
+            ? response.screens
+            : [];
 
-        // ✅ RESET SELECTION STATE FIRST (THIS IS THE FIX)
-        this.selectedScreenType = null;
-        this.selectedScreenName = null;
-        this.selectAllScreens = false;
-        this.filteredNames = [];
+          // ✅ RESET SELECTION STATE FIRST (THIS IS THE FIX)
+          this.selectedScreenType = null;
+          this.selectedScreenName = null;
+          this.selectAllScreens = false;
+          this.filteredNames = [];
 
-        this.analysisResponse = screens;
+          this.analysisResponse = screens;
 
-        this.screenTypes = Array.from(
-          new Set(
-            screens
-              .map(s => s.screen_type)
-              .filter((t): t is string => typeof t === 'string')
-          )
-        );
+          this.screenTypes = Array.from(
+            new Set(
+              screens
+                .map(s => s.screen_type)
+                .filter((t): t is string => typeof t === 'string')
+            )
+          );
 
-        this.analysisDone = true;
-        this.cdr.detectChanges();
-      },
-      error: err => console.error('Analysis error:', err)
-    });
+          this.analysisDone = true;
+          this.cdr.detectChanges();
+        },
+        error: err => console.error('Analysis error:', err)
+      });
   }
 
   // To handle screen type selection change

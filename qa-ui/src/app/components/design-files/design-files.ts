@@ -7,8 +7,12 @@ import {
   ElementRef,
   signal,
   effect,
-  ChangeDetectorRef
+  ChangeDetectorRef,
+  DestroyRef,
+  inject,
+  ChangeDetectionStrategy
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -43,7 +47,8 @@ import { Steps, SourceType } from '../../shared/models/design-files.model';
     ReviewAndRun
   ],
   templateUrl: './design-files.html',
-  styleUrls: ['./design-files.scss']
+  styleUrls: ['./design-files.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DesignFiles {
 
@@ -71,11 +76,19 @@ export class DesignFiles {
   source = signal<SourceType>('figma');
   setSource(s: SourceType) {
     this.source.set(s);
+    // ✅ When switching to JSON, fetch the files
+    if (s === 'json' && !this.hasLoadedJsonFiles) {
+      this.loadJsonFiles();
+    }
   }
 
   @ViewChild('mainEl') mainEl?: ElementRef<HTMLElement>;
-  @ViewChild(PrdUpload) prdUpload!: PrdUpload;
-  @ViewChild(ReviewAndRun) reviewAndRun!: ReviewAndRun;
+  @ViewChild(PrdUpload) prdUpload?: PrdUpload;
+  @ViewChild(ReviewAndRun) reviewAndRun?: ReviewAndRun;
+  @ViewChild(DfJsonPanelComponent) jsonPanel?: DfJsonPanelComponent;
+
+  private destroyRef = inject(DestroyRef);
+  private hasLoadedJsonFiles = false;
 
   constructor(
     private api: ApiService,
@@ -122,15 +135,15 @@ export class DesignFiles {
       return;
     }
 
-    if (!this.prdUpload.analysisDone) {
-      this.prdUpload.analyze();   // ✅ Start Analysis
+    if (!this.prdUpload?.analysisDone) {
+      this.prdUpload?.analyze();   // ✅ Start Analysis
       return;
     }
 
     // ✅ Generate Test Cases
     this.activeIndex++;
     this.cdr.detectChanges();  // Force change detection to instantiate ReviewAndRun
-    this.reviewAndRun.generateTestCases();
+    this.reviewAndRun?.generateTestCases();
     this.scrollMainToTop();
   }
 
@@ -144,24 +157,52 @@ export class DesignFiles {
     }
   }
 
-  /* ---------------- JSON Source Side‑Effect ---------------- */
+  /* ---------------- JSON Files Loading  ---------------- */
 
-  private jsonApiCalled = false;
+  private loadJsonFiles() {
+    const cachedIdStr = sessionStorage.getItem('design_files_figma_data');
+    
+    if (!cachedIdStr) {
+      console.warn('No cached figma data found in sessionStorage');
+      return;
+    }
+
+    try {
+      const cachedData = JSON.parse(cachedIdStr);
+      const cachedId = cachedData?.cacheId;
+
+      if (!cachedId) {
+        console.warn('Cache ID is missing from sessionStorage');
+        return;
+      }
+
+      this.hasLoadedJsonFiles = true; // ✅ Mark as loaded BEFORE API call to prevent re-runs
+      
+      this.api.getFilesByCacheId(cachedId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (res) => {
+            this.storageService.setDesignFilesJsonData(res);
+            // ✅ Notify JSON panel to refresh
+            this.jsonPanel?.refresh();
+            console.log('JSON files loaded successfully');
+          },
+          error: (err) => {
+            console.error('Failed to load JSON files:', err);
+            this.hasLoadedJsonFiles = false; // ✅ Reset on error to allow retry
+          }
+        });
+    } catch (e) {
+      console.error('Error parsing cached data:', e);
+    }
+  }
 
   private getFilesByCacheId() {
+    // ✅ Keep effect only to track source changes (no signal dependency issues)
     effect(() => {
-      if (this.source() === 'json' && !this.jsonApiCalled) {
-        this.jsonApiCalled = true;
-
-        const cachedId = JSON.parse(
-          sessionStorage.getItem('design_files_figma_data') || '{}'
-        ).cacheId;
-
-        this.api.getFilesByCacheId(cachedId).subscribe({
-          next: res => this.storageService.setDesignFilesJsonData(res),
-          error: () => (this.jsonApiCalled = false)
-        });
-      }
+      // This effect just watches the source signal
+      // Actual loading is triggered by setSource()
+      this.source();
     });
   }
 }
