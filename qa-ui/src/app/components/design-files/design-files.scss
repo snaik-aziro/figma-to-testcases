@@ -1,20 +1,19 @@
 .wizard-container {
   display: grid;
   grid-template-columns: 10rem 1fr;
-  --bottom-bar-h: 2.5rem;
+  --bottom-bar-h: 3rem;
 
-  grid-template-rows: 30rem;
+  grid-template-rows: 1fr var(--bottom-bar-h);
   grid-template-areas:
     "left main"
     "bottom bottom";
   gap: 0.625rem;
-  height: calc(100vh - var(--header-height));
-  max-width: 90rem;
-  margin-inline: auto;
+  height: 100%;
+  width: 100%;
   background: white;
   box-sizing: border-box;
+  overflow: hidden;
 }
-
 .rail {
   grid-area: left;
   border-right: var(--border-1) solid var(--color-border);

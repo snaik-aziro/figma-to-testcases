@@ -1,7 +1,10 @@
 /* App shell: fills the viewport; content sits next to fixed-width sidebar */
 .app-shell {
-  min-height: calc(100% - 6.75rem);
+  display: flex;
+  flex-direction: row;
+  height: var(--app-shell-height);
   background: var(--color-bg);
+  overflow: hidden;
 }
 
 /* Sidebar column: width set inside the sidebar component; keep stacking on small screens if needed */

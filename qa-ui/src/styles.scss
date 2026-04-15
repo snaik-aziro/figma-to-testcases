@@ -63,9 +63,10 @@ body {
 
 :root {
   /* Layout Tokens (REM‑based) */
-  --header-height: 6.75rem;        /* 108px */
+  --header-height: 4rem;           /* 64px - standardized header */
   --sidebar-width: 16rem;          /* 256px */
   --container-max: 90rem;          /* 1440px */
+  --app-shell-height: calc(100vh - var(--header-height));
 
   /* Spacing Scale */
   --space-2: 0.125rem;   /* 2px */
