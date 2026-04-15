@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
@@ -17,7 +17,8 @@ export interface NavItem {
   standalone: true,
   imports: [RouterLink, RouterLinkActive, MatIconModule, MatDividerModule, MatTooltipModule],
   templateUrl: './sidebar.html',
-  styleUrls: ['./sidebar.scss']
+  styleUrls: ['./sidebar.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Sidebar {
   @Input() collapsed = false;

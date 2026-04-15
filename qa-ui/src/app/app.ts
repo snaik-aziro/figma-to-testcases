@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Header } from './shared/header/header';
 import { Sidebar } from './shared/sidebar/sidebar';
@@ -11,7 +11,8 @@ import { AsyncPipe } from '@angular/common';
   imports: [RouterOutlet, Header, Sidebar, Loader, AsyncPipe],
   standalone: true,
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class App {
   loading$!: Observable<boolean>;

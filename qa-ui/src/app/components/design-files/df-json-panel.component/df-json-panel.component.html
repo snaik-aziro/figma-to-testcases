@@ -18,7 +18,7 @@
 
   <h3 class="panel-title mt">Select Cached JSON File</h3>
 
-  @if (cachedFiles.length > 0) {
+  @if (cachedFiles().length > 0) {
 
   <div class="half">
     <label class="form-label">Select Cached Design</label>
@@ -28,7 +28,7 @@
         Select a cached design
       </option>
 
-      @for (file of cachedFiles; let i = $index; track file.cacheId ?? file.fileId) {
+      @for (file of cachedFiles(); let i = $index; track file.cacheId ?? file.fileId) {
       <option [value]="i">
         {{ file.fileId || file.cacheId }}
       </option>
