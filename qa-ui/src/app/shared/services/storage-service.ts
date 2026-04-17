@@ -57,4 +57,18 @@ export class StorageService {
     sessionStorage.removeItem(PRD_FILE);
   }
 
+  // Returns the cacheId from the stored design files data, or an empty string if not available.
+  get cacheId(): string {
+    const raw = sessionStorage.getItem(DESIGN_FILES_KEY);
+    if (!raw) return '';
+
+    try {
+      const data = JSON.parse(raw);
+      return data?.cacheId ?? '';
+    } catch {
+      return '';
+    }
+  }
+
+
 }
